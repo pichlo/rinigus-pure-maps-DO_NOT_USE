@@ -71,7 +71,7 @@ SUPPORTED_LOCALES = [
 ]
 
 URL = ("http://open.mapquestapi.com/directions/v2/route"
-       "?key=2aHt8JcDObJZhGHZ9EPv99F1N5JNp1RI"
+       "?key=m9SpZBHmxPEmZyobkOhMhdhGfkhui4bK"
        "&ambiguities=ignore"
        "&from={fm}"
        "&to={to}"

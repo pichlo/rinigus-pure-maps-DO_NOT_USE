@@ -103,7 +103,7 @@ MODEOPTIONS = {
     "pedestrian": ["use_ferry", "max_hiking_difficulty"]
 }
 
-URL = "https://route.stadiamaps.com/route?api_key=da5114fe-7c47-46ae-ac43-b90d2f3df9e8&json={input}"
+URL = "https://route.stadiamaps.com/route?api_key=f0782c85-8dd3-4855-b068-743464d5c175&json={input}"
 cache = {}
 
 def prepare_endpoint(point):

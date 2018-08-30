@@ -35,7 +35,7 @@ MapboxMap {
     zoomLevel: 4.0
 
     // Token for Mapbox.com-hosted maps, i.e. sources with mapbox:// URLs.
-    accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjamwyM3E2anIxaGZjM3FwMmlpNDR1ZnIyIn0.Hx8xydn4fRyXehvmjfZcog"
+    accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjamxiMWF2N3gxNDI4M2ttdHNsYWxoOGFyIn0.0znRguypZfUcijqfBFyP3g"
 
     property bool   autoCenter: false
     property bool   autoRotate: false
