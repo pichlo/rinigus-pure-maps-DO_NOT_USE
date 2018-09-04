@@ -184,9 +184,10 @@ Page {
             onClicked: {
                 app.hideMenu();
                 map.addRoute(listItem.result);
-                map.hidePoiBubbles();
+                map.hidePoi();
                 map.fitViewToRoute();
                 map.addManeuvers(listItem.result.maneuvers);
+                map.setModeExamineRoute();
             }
 
         }
