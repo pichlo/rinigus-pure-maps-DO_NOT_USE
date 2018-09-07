@@ -25,23 +25,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     color: app.styler.blockBg
-    height: {
-        if (!destDist) return 0;
-        if (!app.portrait && notify) {
-            var h1 = Theme.paddingMedium + Theme.fontSizeLarge - Theme.fontSizeMedium + narrativeLabel.height;
-            var h2 = Theme.paddingMedium + destLabel.height;
-            var h3 = streetLabel.height;
-            return Math.max(h1, h2, h3);
-        } else {
-            var h1 = iconImage.height + 2 * Theme.paddingLarge;
-            var h2 = manLabel.height + Theme.paddingSmall + narrativeLabel.height;
-            var h3 = manLabel.height + streetLabel.height;
-            // If far off route, manLabel defines the height of the block,
-            // but we need padding to make a sufficiently large tap target.
-            var h4 = notify ? 0 : manLabel.height + Theme.paddingMedium;
-            return Math.max(h1, h2, h3, h4);
-        }
-    }
+    height: destDist ? displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
     states: [
         State {
             when: !app.portrait && destDist && notify
@@ -69,85 +53,146 @@ Rectangle {
     property int    shieldLeftHeight: !app.portrait && destDist && notify ? manLabel.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
     property int    shieldLeftWidth:  !app.portrait && destDist && notify ? manLabel.anchors.leftMargin + Theme.paddingLarge + Math.max(manLabel.width, iconImage.width) : 0
 
-    Label {
-        // Distance remaining to the next maneuver
-        id: manLabel
-        anchors.left: iconImage.right
-        anchors.leftMargin: iconImage.width > 0 || !app.portrait ? (app.portrait ? Theme.paddingLarge : Theme.horizontalPageMargin) : 0
-        anchors.rightMargin: Theme.paddingLarge
-        anchors.top: parent.top
-        color: block.notify ? Theme.highlightColor : Theme.primaryColor
-        font.family: block.notify ? Theme.fontFamilyHeading : Theme.fontFamily
-        font.pixelSize: block.notify ? Theme.fontSizeHuge : Theme.fontSizeMedium
-        height: block.destDist ? implicitHeight + Theme.paddingMedium : 0
-        text: block.manDist
-        verticalAlignment: Text.AlignBottom
-        states: [
-            State {
-                when: !app.portrait && block.destDist && block.notify
-                AnchorChanges {
-                    target: manLabel
-                    anchors.left: undefined
-                    anchors.right: parent.left
-                    anchors.top: iconImage.bottom
-                }
-            }
-        ]
-    }
-
-    Label {
-        // Estimated time of arrival
-        id: destLabel
-        anchors.baseline: manLabel.baseline
+    Row {
+        // Display area, split into: maneuver icon, left, middle and right
+        id: displayArea
+        anchors.left: parent.left
         anchors.right: parent.right
-        anchors.rightMargin: Theme.horizontalPageMargin
-        color: Theme.primaryColor
-        font.pixelSize: Theme.fontSizeLarge
-        height: block.destDist ? implicitHeight + Theme.paddingMedium : 0
-        text: block.notify ? block.destEta : ""
-        states: [
-            State {
-                when: !app.portrait && streetLabel.text
-                AnchorChanges {
-                    target: destLabel
-                    anchors.baseline: streetLabel.baseline
-                }
-            },
-            State {
-                when: !app.portrait
-                AnchorChanges {
-                    target: destLabel
-                    anchors.baseline: undefined
-                    anchors.top: parent.top
-                }
-                PropertyChanges {
-                    target: destLabel
-                    verticalAlignment: Text.AlignBottom
-                }
-            }
-        ]
-    }
+        anchors.top: parent.top
+        height: app.portrait ? implicitHeight : 0
+        visible: app.portrait
 
-    Label {
-        // Estimated time of arrival: ETA label
-        id: destEta
-        anchors.baseline: destLabel.baseline
-        anchors.right: destLabel.left
-        anchors.rightMargin: Theme.paddingSmall
-        color: Theme.secondaryColor
-        font.pixelSize: Theme.fontSizeMedium
-        text: app.tr("ETA")
-        visible: block.notify
+        Image {
+            // Icon for the next maneuver
+            id: iconImage
+            anchors.leftMargin: Theme.paddingSmall
+            anchors.rightMargin: Theme.paddingSmall
+            anchors.topMargin: Theme.paddingSmall
+            anchors.bottomMargin: Theme.paddingSmall
+            anchors.top: parent.top
+            fillMode: Image.Pad
+            height: block.notify ? sourceSize.height : 0
+            opacity: 0.9
+            smooth: true
+            source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
+            sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
+            sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
+            width: block.notify ? sourceSize.width : 0
+        }
+
+        Column {
+            // Left area, e.g. a distance to the next maneuver
+            id: displayAreaLeft
+            anchors.leftMargin: Theme.paddingSmall
+            anchors.rightMargin: Theme.paddingSmall
+            anchors.top: parent.top
+            width: (parent.width - iconImage.width) / 3
+            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+
+            Label {
+                // Distance remaining to the next maneuver
+                id: manLabel
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: Theme.highlightColor
+                font.family: Theme.fontFamilyHeading
+                font.pixelSize: Theme.fontSizeHuge
+                text: token(block.manDist, " ", 0)
+                verticalAlignment: Text.AlignTop
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            Label {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: manLabel.color
+                font.pixelSize: Theme.fontSizeMedium
+                height: parent.height - destLabel.height
+                text: long_word_distance(token(block.manDist, " ", 1))
+                verticalAlignment: Text.AlignBottom
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+
+        Column {
+            // Middle area, e.g. current speed
+            id: displayAreaMiddle
+            anchors.leftMargin: Theme.paddingSmall
+            anchors.rightMargin: Theme.paddingSmall
+            anchors.top: parent.top
+            width: (parent.width - iconImage.width) / 3
+            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+
+            Label {
+                id: labelMid
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: Theme.highlightColor
+                font.family: Theme.fontFamilyHeading
+                font.pixelSize: Theme.fontSizeHuge
+                text: speed_value()
+                verticalAlignment: Text.AlignTop
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            Label {
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: labelMid.color
+                font.pixelSize: Theme.fontSizeMedium
+                height: parent.height - destLabel.height
+                text: speed_unit()
+                verticalAlignment: Text.AlignBottom
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
+
+        Column {
+            // Right area, e.g. a distance to the destination or ETA
+            id: displayAreaRight
+            anchors.leftMargin: Theme.paddingSmall
+            anchors.rightMargin: Theme.paddingSmall
+            anchors.top: parent.top
+            width: (parent.width - iconImage.width) / 3
+            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+
+            Label {
+                // Estimated time of arrival
+                id: destLabel
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: Theme.highlightColor
+                font.family: Theme.fontFamilyHeading
+                font.pixelSize: Theme.fontSizeHuge
+                height: implicitHeight
+                text: block.notify ? block.destEta : ""
+                verticalAlignment: Text.AlignTop
+                horizontalAlignment: Text.AlignHCenter
+            }
+
+            Label {
+                // Estimated time of arrival: ETA label
+                id: destEta
+                anchors.left: parent.left
+                anchors.right: parent.right
+                color: destLabel.color
+                font.pixelSize: Theme.fontSizeMedium
+                height: parent.height - destLabel.height
+                text: app.tr("ETA")
+                verticalAlignment: Text.AlignBottom
+                horizontalAlignment: Text.AlignHCenter
+            }
+        }
     }
 
     Label {
         // Street name
         id: streetLabel
-        anchors.left: iconImage.right
-        anchors.leftMargin: iconImage.width > 0 ? Theme.paddingLarge : 0
+        anchors.left: parent.left
+        anchors.leftMargin: Theme.paddingLarge
         anchors.right: parent.right
-        anchors.rightMargin: app.portrait ? Theme.horizontalPageMargin : Theme.paddingLarge
-        anchors.top: manLabel.bottom
+        anchors.rightMargin: Theme.paddingLarge
+        anchors.top: displayArea.bottom
         color: Theme.primaryColor
         font.pixelSize: Theme.fontSizeExtraLarge
         height: text ? implicitHeight + Theme.paddingMedium : 0
@@ -166,6 +211,7 @@ Rectangle {
         text: app.navigationPageSeen && block.notify ? streetName : ""
         truncationMode: TruncationMode.Fade
         verticalAlignment: Text.AlignTop
+        horizontalAlignment: Text.AlignHCenter
 
         property string streetName: {
             if (!block.street) return "";
@@ -181,11 +227,11 @@ Rectangle {
     Label {
         // Instruction text for the next maneuver
         id: narrativeLabel
-        anchors.left: iconImage.right
-        anchors.leftMargin: iconImage.width > 0 ? Theme.paddingLarge : 0
+        anchors.left: parent.left
+        anchors.leftMargin: Theme.paddingLarge
         anchors.right: parent.right
-        anchors.rightMargin: app.portrait ? Theme.horizontalPageMargin : Theme.paddingLarge
-        anchors.top: manLabel.bottom
+        anchors.rightMargin: Theme.paddingLarge
+        anchors.top: displayArea.bottom
         anchors.topMargin: Theme.paddingSmall
         color: Theme.primaryColor
         font.pixelSize: Theme.fontSizeMedium
@@ -206,43 +252,8 @@ Rectangle {
             (block.notify && !streetLabel.text ? block.narrative : "") :
             (block.notify ? app.tr("Tap to review maneuvers or begin navigating") : "")
         verticalAlignment: Text.AlignTop
+        horizontalAlignment: Text.AlignHCenter
         wrapMode: Text.WordWrap
-    }
-
-    Image {
-        // Icon for the next maneuver
-        id: iconImage
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.horizontalPageMargin
-        anchors.rightMargin: Theme.paddingLarge
-        anchors.top: parent.top
-        anchors.topMargin: height ? Theme.paddingLarge : 0
-        fillMode: Image.Pad
-        height: block.notify ? sourceSize.height : 0
-        opacity: 0.9
-        smooth: true
-        source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
-        sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
-        sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
-        states: [
-            State {
-                when: !app.portrait && block.destDist && block.notify && iconImage.width < manLabel.width
-                AnchorChanges {
-                    target: iconImage
-                    anchors.left: undefined
-                    anchors.horizontalCenter: manLabel.horizontalCenter
-                }
-            },
-            State {
-                when: !app.portrait && block.destDist && block.notify
-                AnchorChanges {
-                    target: iconImage
-                    anchors.left: undefined
-                    anchors.right: parent.right
-                }
-            }
-        ]
-        width: block.notify ? sourceSize.width : 0
     }
 
     MouseArea {
@@ -250,4 +261,44 @@ Rectangle {
         onClicked: app.showNavigationPages();
     }
 
+    function token(s, t, n) {
+        var result = "";
+        for (var i in s) {
+            if (s[i] == t) {
+                --n;
+            } else if (n == 0) {
+                result += s[i];
+            }
+        }
+        return result;
+    }
+
+    function long_word_distance(s) {
+        return (s == "ft") ? "feet"   :
+               (s == "yd") ? "yards"  :
+               (s == "m")  ? "meters" :
+               (s == "mi") ? "miles"  : s;
+    }
+
+    function speed_value() {
+        if (!py.ready) {
+            return "—";
+        } else if (!gps.position.speedValid) {
+            return "—";
+        } else if (app.conf.get("units") === "metric") {
+            return Math.round(gps.position.speed * 3.6);
+        } else {
+            return Math.round(gps.position.speed * 2.23694);
+        }
+    }
+
+    function speed_unit() {
+        if (!py.ready) {
+            return "";
+        } else if (app.conf.get("units") === "metric") {
+            return "km/h";
+        } else {
+            return "mph";
+        }
+    }
 }
