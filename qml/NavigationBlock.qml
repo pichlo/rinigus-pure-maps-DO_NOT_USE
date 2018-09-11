@@ -25,7 +25,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     color: app.styler.blockBg
-    height: destDist ? displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
+    height: destDist ? progressComplete.height + displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
     states: [
         State {
             when: !app.portrait && destDist && notify
@@ -39,7 +39,6 @@ Rectangle {
             }
         }
     ]
-    z: 500
 
     property string destDist:  app.navigationStatus.destDist
     property string destEta:   app.navigationStatus.destEta
@@ -53,12 +52,35 @@ Rectangle {
     property int    shieldLeftHeight: !app.portrait && destDist && notify ? manLabel.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
     property int    shieldLeftWidth:  !app.portrait && destDist && notify ? manLabel.anchors.leftMargin + Theme.paddingLarge + Math.max(manLabel.width, iconImage.width) : 0
 
+    Rectangle {
+        id: progressComplete
+        anchors.left: parent.left
+        anchors.top: parent.top
+        color: Theme.primaryColor
+        height: app.portrait && block.notify ? Theme.paddingSmall : 0
+        visible: height > 0
+        radius: height / 2
+        width: app.navigationStatus.progress * displayArea.width
+    }
+
+    Rectangle {
+        id: progressRemaining
+        anchors.left: progressComplete.left
+        anchors.right: parent.right
+        anchors.top: progressComplete.top
+        color: Theme.primaryColor
+        opacity: 0.1
+        height: progressComplete.height
+        visible: progressComplete.visible
+        radius: progressComplete.radius
+    }
+
     Row {
         // Display area, split into: maneuver icon, left, middle and right
         id: displayArea
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.top: parent.top
+        anchors.top: progressComplete.bottom
         height: app.portrait ? implicitHeight : 0
         visible: app.portrait
 
@@ -120,8 +142,8 @@ Rectangle {
             anchors.leftMargin: Theme.paddingSmall
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
-            width: (parent.width - iconImage.width) / 3
-            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+            width: displayAreaLeft.width
+            height: displayAreaLeft.height
 
             Label {
                 id: labelMid
@@ -153,8 +175,8 @@ Rectangle {
             anchors.leftMargin: Theme.paddingSmall
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
-            width: (parent.width - iconImage.width) / 3
-            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+            width: displayAreaLeft.width
+            height: displayAreaLeft.height
 
             Label {
                 // Estimated time of arrival
@@ -282,9 +304,9 @@ Rectangle {
 
     function speed_value() {
         if (!py.ready) {
-            return "—";
+            return "";
         } else if (!gps.position.speedValid) {
-            return "—";
+            return "";
         } else if (app.conf.get("units") === "metric") {
             return Math.round(gps.position.speed * 3.6);
         } else {
