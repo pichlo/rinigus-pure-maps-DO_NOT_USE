@@ -25,7 +25,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     color: app.styler.blockBg
-    height: destDist ? progressComplete.height + displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
+    height: app.portrait && notify ? progressComplete.height + displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
     states: [
         State {
             when: !app.portrait && destDist && notify
@@ -93,7 +93,7 @@ Rectangle {
             anchors.bottomMargin: Theme.paddingSmall
             anchors.top: parent.top
             fillMode: Image.Pad
-            height: block.notify ? sourceSize.height : 0
+            height: /*block.notify ? sourceSize.height :*/ 0
             opacity: 0.9
             smooth: true
             source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
@@ -109,7 +109,7 @@ Rectangle {
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: (parent.width - iconImage.width) / 3
-            height: iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin
+            height: iconImage.height > 0 ? iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin : 0
 
             Label {
                 // Distance remaining to the next maneuver
