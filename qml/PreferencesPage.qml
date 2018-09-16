@@ -36,14 +36,17 @@ Page {
                 title: app.tr("Preferences")
             }
 
+            SectionHeader {
+                text: app.tr("General")
+            }
+
             TextSwitch {
-                id: tiltSwitch
-                checked: app.conf.get("tilt_when_navigating")
-                description: app.tr("Only applies to vector maps.")
-                text: app.tr("Tilt map when navigating")
+                id: autocompleteSwitch
+                checked: app.conf.get("auto_complete_geo")
+                description: app.tr("Fetch autocompleted search results while typing a search string.")
+                text: app.tr("Autocomplete while searching")
                 onCheckedChanged: {
-                    app.conf.set("tilt_when_navigating", tiltSwitch.checked);
-                    map.tiltEnabled = tiltSwitch.checked;
+                    app.conf.set("auto_complete_geo", autocompleteSwitch.checked);
                 }
             }
 
@@ -59,25 +62,6 @@ Page {
                 onValueChanged: {
                     app.conf.set("map_scale", scaleSlider.value);
                     !app.navigationActive && map.setScale(scaleSlider.value);
-                }
-            }
-
-            ComboBox {
-                id: voiceGenderComboBox
-                description: app.tr("Preferred gender for voice navigation. Only supported by some engines and languages.")
-                label: app.tr("Voice gender")
-                menu: ContextMenu {
-                    MenuItem { text: app.tr("Male") }
-                    MenuItem { text: app.tr("Female") }
-                }
-                property var values: ["male", "female"]
-                Component.onCompleted: {
-                    var value = app.conf.get("voice_gender");
-                    voiceGenderComboBox.currentIndex = voiceGenderComboBox.values.indexOf(value);
-                }
-                onCurrentIndexChanged: {
-                    var index = voiceGenderComboBox.currentIndex;
-                    app.conf.set("voice_gender", voiceGenderComboBox.values[index]);
                 }
             }
 
@@ -145,6 +129,51 @@ Page {
                 }
             }
 
+            SectionHeader {
+                text: app.tr("Navigation")
+            }
+
+            TextSwitch {
+                id: autorotateSwitch
+                checked: app.conf.get("auto_rotate_when_navigating")
+                description: app.tr("Set rotation of the map in the direction of movement when starting navigation.")
+                text: app.tr("Rotate map when navigating")
+                onCheckedChanged: {
+                    app.conf.set("auto_rotate_when_navigating", autorotateSwitch.checked);
+                }
+            }
+
+            TextSwitch {
+                id: tiltSwitch
+                checked: app.conf.get("tilt_when_navigating")
+                description: app.tr("Only applies to vector maps.")
+                enabled: autorotateSwitch.checked
+                text: app.tr("Tilt map when navigating")
+                onCheckedChanged: {
+                    app.conf.set("tilt_when_navigating", tiltSwitch.checked);
+                    map.tiltEnabled = tiltSwitch.checked;
+                }
+            }
+
+            ComboBox {
+                id: voiceGenderComboBox
+                description: app.tr("Preferred gender for voice navigation. Only supported by some engines and languages.")
+                label: app.tr("Voice gender")
+                menu: ContextMenu {
+                    MenuItem { text: app.tr("Male") }
+                    MenuItem { text: app.tr("Female") }
+                }
+                property var values: ["male", "female"]
+                Component.onCompleted: {
+                    var value = app.conf.get("voice_gender");
+                    voiceGenderComboBox.currentIndex = voiceGenderComboBox.values.indexOf(value);
+                }
+                onCurrentIndexChanged: {
+                    var index = voiceGenderComboBox.currentIndex;
+                    app.conf.set("voice_gender", voiceGenderComboBox.values[index]);
+                }
+            }
+
             Spacer {
                 height: Theme.paddingLarge
             }
@@ -157,9 +186,50 @@ Page {
             }
 
             Spacer {
-                height: 2 * Theme.paddingLarge
+                height: Theme.paddingLarge
             }
 
+            SectionHeader {
+                text: app.tr("Development")
+            }
+
+            ListItemLabel {
+                font.pixelSize: Theme.fontSizeSmall
+                height: implicitHeight
+                text: app.tr("The following options are for development only. Please don't change them unless you know what you are doing.")
+                wrapMode: Text.WordWrap
+            }
+
+            TextSwitch {
+                id: develSwitch
+                checked: false
+                text: app.tr("Show development options")
+            }
+
+            TextSwitch {
+                id: develCoorSwitch
+                checked: app.conf.get("devel_coordinate_center")
+                description: app.tr("Sets current position to the center of the current map view. Remember to disable GPS positioning when using this option.")
+                text: app.tr("Set position to the map center")
+                visible: develSwitch.checked
+                onCheckedChanged: {
+                    app.conf.set("devel_coordinate_center", develCoorSwitch.checked);
+                }
+            }
+
+            TextSwitch {
+                id: develShowZSwitch
+                checked: app.conf.get("devel_show_z")
+                text: app.tr("Show current zoom level")
+                visible: develSwitch.checked
+                onCheckedChanged: {
+                    app.conf.set("devel_show_z", develShowZSwitch.checked);
+                }
+            }
+
+            Spacer {
+                height: 2 * Theme.paddingLarge
+            }
         }
 
         VerticalScrollDecorator {}

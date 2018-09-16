@@ -30,6 +30,7 @@ MapboxMap {
     cacheDatabaseDefaultPath: true
     cacheDatabaseStoreSettings: false
     center: QtPositioning.coordinate(49, 13)
+    metersPerPixelTolerance: Math.max(0.001, metersPerPixel*0.01) // 1 percent from the current value
     pitch: app.navigationActive && format !== "raster" && tiltEnabled ? 60 : 0
     pixelRatio: Theme.pixelRatio * 1.5
     zoomLevel: 4.0
@@ -278,8 +279,8 @@ MapboxMap {
         map.zoomLevel < zoom && map.setZoomLevel(zoom);
         map.centerOnPosition();
         map.autoCenter = true;
-        map.autoRotate = true;
-        map.tiltEnabled = app.conf.get("tilt_when_navigating");
+        map.autoRotate = app.conf.get("auto_rotate_when_navigating");
+        map.tiltEnabled = map.autoRotate && app.conf.get("tilt_when_navigating");
         map.initVoiceNavigation();
         app.navigationActive = true;
         app.navigationPageSeen = true;

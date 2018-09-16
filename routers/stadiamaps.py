@@ -89,7 +89,8 @@ MODE = {
     "hov": "car",
     "motorcycle": "car",
     "motor_scooter": "car",
-    "pedestrian": "foot"
+    "pedestrian": "foot",
+    "multimodal": "transit"
 }
 
 MODEOPTIONS = {
@@ -100,7 +101,8 @@ MODEOPTIONS = {
     "hov": ["use_ferry", "use_highways", "use_tolls"],
     "motorcycle": ["use_ferry", "use_highways", "use_tolls", "use_trails"],
     "motor_scooter": ["use_ferry", "use_highways", "use_hills", "use_primary", "use_tolls"],
-    "pedestrian": ["use_ferry", "max_hiking_difficulty"]
+    "pedestrian": ["use_ferry", "max_hiking_difficulty"],
+    "multimodal": []
 }
 
 URL = "https://route.stadiamaps.com/route?api_key=f0782c85-8dd3-4855-b068-743464d5c175&json={input}"

@@ -18,7 +18,22 @@
 
 import QtQuick 2.0
 
-QtObject {
+Item {
+    id: conf
+
+    // cache certain frequently used properties locally
+    property bool   autoCompleteGeo
+    property bool   developmentCoordinateCenter: false
+    property bool   developmentShowZ: false
+    property string units
+
+    Component.onCompleted: _update()
+
+    Connections {
+        target: py
+        onConfigurationChanged: conf._update()
+        onReadyChanged: conf._update()
+    }
 
     function add(option, item) {
         // Add item to the value of option.
@@ -48,6 +63,14 @@ QtObject {
     function set(option, value) {
         // Set the value of option.
         return py.call_sync("poor.conf.set", [option, value]);
+    }
+
+    function _update() {
+        if (!py.ready) return;
+        conf.autoCompleteGeo = get("auto_complete_geo");
+        conf.developmentCoordinateCenter = get("devel_coordinate_center");
+        conf.developmentShowZ = get("devel_show_z");
+        conf.units = get("units");
     }
 
 }
