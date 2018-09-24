@@ -25,7 +25,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     color: app.styler.blockBg
-    height: app.portrait && notify ? progressComplete.height + displayArea.height + Math.max(streetLabel.height, narrativeLabel.height) : 0
+    height: (app.portrait && notify ? progressComplete.height + displayArea.height : 0) + Math.max(streetLabel.height, narrativeLabel.height)
     states: [
         State {
             when: !app.portrait && destDist && notify
@@ -49,8 +49,8 @@ Rectangle {
     property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
     property var    street:    app.navigationStatus.street
-    property int    shieldLeftHeight: !app.portrait && destDist && notify ? manLabel.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
-    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? manLabel.anchors.leftMargin + Theme.paddingLarge + Math.max(manLabel.width, iconImage.width) : 0
+    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayAreaLeftValue.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
+    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayAreaLeftValue.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaLeftValue.width, iconImage.width) : 0
 
     Rectangle {
         id: progressComplete
@@ -93,7 +93,7 @@ Rectangle {
             anchors.bottomMargin: Theme.paddingSmall
             anchors.top: parent.top
             fillMode: Image.Pad
-            height: /*block.notify ? sourceSize.height :*/ 0
+            height: block.notify ? sourceSize.height : 0
             opacity: 0.9
             smooth: true
             source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
@@ -109,16 +109,13 @@ Rectangle {
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: (parent.width - iconImage.width) / 3
-            height: iconImage.height > 0 ? iconImage.height + iconImage.anchors.topMargin + iconImage.anchors.bottomMargin : 0
 
             Label {
-                // Distance remaining to the next maneuver
-                id: manLabel
                 anchors.left: parent.left
                 anchors.right: parent.right
                 color: Theme.highlightColor
-                font.family: Theme.fontFamilyHeading
                 font.pixelSize: Theme.fontSizeHuge
+                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
                 text: token(block.manDist, " ", 0)
                 verticalAlignment: Text.AlignTop
                 horizontalAlignment: Text.AlignHCenter
@@ -127,9 +124,8 @@ Rectangle {
             Label {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                color: manLabel.color
+                color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeMedium
-                height: parent.height - destLabel.height
                 text: long_word_distance(token(block.manDist, " ", 1))
                 verticalAlignment: Text.AlignBottom
                 horizontalAlignment: Text.AlignHCenter
@@ -146,12 +142,11 @@ Rectangle {
             height: displayAreaLeft.height
 
             Label {
-                id: labelMid
                 anchors.left: parent.left
                 anchors.right: parent.right
                 color: Theme.highlightColor
-                font.family: Theme.fontFamilyHeading
                 font.pixelSize: Theme.fontSizeHuge
+                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
                 text: speed_value()
                 verticalAlignment: Text.AlignTop
                 horizontalAlignment: Text.AlignHCenter
@@ -160,9 +155,8 @@ Rectangle {
             Label {
                 anchors.left: parent.left
                 anchors.right: parent.right
-                color: labelMid.color
+                color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeMedium
-                height: parent.height - destLabel.height
                 text: speed_unit()
                 verticalAlignment: Text.AlignBottom
                 horizontalAlignment: Text.AlignHCenter
@@ -179,27 +173,21 @@ Rectangle {
             height: displayAreaLeft.height
 
             Label {
-                // Estimated time of arrival
-                id: destLabel
                 anchors.left: parent.left
                 anchors.right: parent.right
                 color: Theme.highlightColor
-                font.family: Theme.fontFamilyHeading
                 font.pixelSize: Theme.fontSizeHuge
-                height: implicitHeight
+                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
                 text: block.notify ? block.destEta : ""
                 verticalAlignment: Text.AlignTop
                 horizontalAlignment: Text.AlignHCenter
             }
 
             Label {
-                // Estimated time of arrival: ETA label
-                id: destEta
                 anchors.left: parent.left
                 anchors.right: parent.right
-                color: destLabel.color
+                color: Theme.highlightColor
                 font.pixelSize: Theme.fontSizeMedium
-                height: parent.height - destLabel.height
                 text: app.tr("ETA")
                 verticalAlignment: Text.AlignBottom
                 horizontalAlignment: Text.AlignHCenter
@@ -219,17 +207,6 @@ Rectangle {
         font.pixelSize: Theme.fontSizeExtraLarge
         height: text ? implicitHeight + Theme.paddingMedium : 0
         maximumLineCount: 1
-        states: [
-            State {
-                when: !app.portrait
-                AnchorChanges {
-                    target: streetLabel
-                    anchors.left: iconImage.width > manLabel.width ? iconImage.right : manLabel.right
-                    anchors.right: destEta.left
-                    anchors.top: parent.top
-                }
-            }
-        ]
         text: app.navigationPageSeen && block.notify ? streetName : ""
         truncationMode: TruncationMode.Fade
         verticalAlignment: Text.AlignTop
@@ -254,22 +231,10 @@ Rectangle {
         anchors.right: parent.right
         anchors.rightMargin: Theme.paddingLarge
         anchors.top: displayArea.bottom
-        anchors.topMargin: Theme.paddingSmall
+        //anchors.topMargin: Theme.paddingSmall
         color: Theme.primaryColor
         font.pixelSize: Theme.fontSizeMedium
         height: text ? implicitHeight + Theme.paddingMedium : 0
-        states: [
-            State {
-                when: !app.portrait
-                AnchorChanges {
-                    target: narrativeLabel
-                    anchors.baseline: destLabel.baseline
-                    anchors.left: iconImage.width > manLabel.width ? iconImage.right : manLabel.right
-                    anchors.right: destEta.left
-                    anchors.top: undefined
-                }
-            }
-        ]
         text: app.navigationPageSeen ?
             (block.notify && !streetLabel.text ? block.narrative : "") :
             (block.notify ? app.tr("Tap to review maneuvers or begin navigating") : "")
