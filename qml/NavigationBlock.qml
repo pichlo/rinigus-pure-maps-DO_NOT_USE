@@ -268,15 +268,17 @@ Rectangle {
     }
 
     function speed_value() {
+        var speed = 0.0;
         if (!py.ready) {
             return "";
         } else if (!gps.position.speedValid) {
             return "";
         } else if (app.conf.get("units") === "metric") {
-            return Math.round(gps.position.speed * 3.6);
+            speed = gps.position.speed * 3.6;
         } else {
-            return Math.round(gps.position.speed * 2.23694);
+            speed = gps.position.speed * 2.23694;
         }
+        return speed < 10 ? Math.round(speed * 10.0) / 10.0 : Math.round(speed);
     }
 
     function speed_unit() {
