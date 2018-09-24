@@ -139,7 +139,6 @@ Rectangle {
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: displayAreaLeft.width
-            height: displayAreaLeft.height
 
             Label {
                 anchors.left: parent.left
@@ -170,7 +169,6 @@ Rectangle {
             anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: displayAreaLeft.width
-            height: displayAreaLeft.height
 
             Label {
                 anchors.left: parent.left
