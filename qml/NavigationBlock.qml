@@ -102,94 +102,31 @@ Rectangle {
             width: block.notify ? sourceSize.width : 0
         }
 
-        Column {
+        NavigationBlockElement {
             // Left area, e.g. a distance to the next maneuver
             id: displayAreaLeft
-            anchors.leftMargin: Theme.paddingSmall
-            anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: (parent.width - iconImage.width) / 3
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeHuge
-                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
-                text: token(block.manDist, " ", 0)
-                verticalAlignment: Text.AlignTop
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeMedium
-                text: long_word_distance(token(block.manDist, " ", 1))
-                verticalAlignment: Text.AlignBottom
-                horizontalAlignment: Text.AlignHCenter
-            }
+            value: token(block.manDist, " ", 0)
+            caption: long_word_distance(token(block.manDist, " ", 1))
         }
 
-        Column {
+        NavigationBlockElement {
             // Middle area, e.g. current speed
             id: displayAreaMiddle
-            anchors.leftMargin: Theme.paddingSmall
-            anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: displayAreaLeft.width
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeHuge
-                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
-                text: speed_value()
-                verticalAlignment: Text.AlignTop
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeMedium
-                text: speed_unit()
-                verticalAlignment: Text.AlignBottom
-                horizontalAlignment: Text.AlignHCenter
-            }
+            value: speed_value()
+            caption: speed_unit()
         }
 
-        Column {
+        NavigationBlockElement {
             // Right area, e.g. a distance to the destination or ETA
             id: displayAreaRight
-            anchors.leftMargin: Theme.paddingSmall
-            anchors.rightMargin: Theme.paddingSmall
             anchors.top: parent.top
             width: displayAreaLeft.width
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeHuge
-                height: implicitHeight * 3 / 4  // text is always a number, we can get away without the part below baseline
-                text: block.notify ? block.destEta : ""
-                verticalAlignment: Text.AlignTop
-                horizontalAlignment: Text.AlignHCenter
-            }
-
-            Label {
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: Theme.highlightColor
-                font.pixelSize: Theme.fontSizeMedium
-                text: app.tr("ETA")
-                verticalAlignment: Text.AlignBottom
-                horizontalAlignment: Text.AlignHCenter
-            }
+            value: block.destEta
+            caption: app.tr("ETA")
         }
     }
 
