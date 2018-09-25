@@ -25,7 +25,7 @@ Rectangle {
     anchors.right: parent.right
     anchors.top: parent.top
     color: app.styler.blockBg
-    height: (app.portrait && notify ? progressComplete.height + displayArea.height : 0) + Math.max(streetLabel.height, narrativeLabel.height)
+    height: (app.portrait && notify ? progressComplete.height + displayArea.height : 0) + narrativeLabel.height
     states: [
         State {
             when: !app.portrait && destDist && notify
@@ -134,24 +134,29 @@ Rectangle {
     }
 
     Label {
-        // Street name
-        id: streetLabel
+        // Street name or instruction text for the next maneuver
+        id: narrativeLabel
         anchors.left: parent.left
         anchors.leftMargin: Theme.paddingLarge
         anchors.right: parent.right
         anchors.rightMargin: Theme.paddingLarge
         anchors.top: displayArea.bottom
         color: Theme.primaryColor
-        font.pixelSize: Theme.fontSizeExtraLarge
+        font.pixelSize: streetNameShown ? Theme.fontSizeExtraLarge : Theme.fontSizeMedium
         height: text ? implicitHeight + Theme.paddingMedium : 0
-        maximumLineCount: 1
-        text: app.navigationPageSeen && block.notify ? streetName : ""
+        maximumLineCount: streetNameShown ? 1 : 2
         truncationMode: TruncationMode.Fade
+        text: block.notify
+                  ? (app.navigationPageSeen
+                         ? (block.street ? streetName : block.narrative)
+                         : app.tr("Tap to review maneuvers or begin navigating"))
+                  : ""
         verticalAlignment: Text.AlignTop
         horizontalAlignment: Text.AlignHCenter
+        wrapMode: Text.WordWrap
 
+        property bool streetNameShown: block.notify && app.navigationPageSeen && block.street
         property string streetName: {
-            if (!block.street) return "";
             var s = "";
             for (var i in block.street) {
                 if (s != "") s += "; "
@@ -159,26 +164,6 @@ Rectangle {
             }
             return s;
         }
-    }
-
-    Label {
-        // Instruction text for the next maneuver
-        id: narrativeLabel
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.paddingLarge
-        anchors.right: parent.right
-        anchors.rightMargin: Theme.paddingLarge
-        anchors.top: displayArea.bottom
-        //anchors.topMargin: Theme.paddingSmall
-        color: Theme.primaryColor
-        font.pixelSize: Theme.fontSizeMedium
-        height: text ? implicitHeight + Theme.paddingMedium : 0
-        text: app.navigationPageSeen ?
-            (block.notify && !streetLabel.text ? block.narrative : "") :
-            (block.notify ? app.tr("Tap to review maneuvers or begin navigating") : "")
-        verticalAlignment: Text.AlignTop
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.WordWrap
     }
 
     MouseArea {
