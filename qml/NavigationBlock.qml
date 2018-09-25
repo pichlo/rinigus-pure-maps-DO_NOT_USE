@@ -184,33 +184,31 @@ Rectangle {
     }
 
     function long_word_distance(s) {
-        return (s == "ft") ? "feet"   :
-               (s == "yd") ? "yards"  :
-               (s == "m")  ? "meters" :
-               (s == "mi") ? "miles"  : s;
+        return (s == app.tr("ft")) ? app.tr("feet")   :
+               (s == app.tr("yd")) ? app.tr("yards")  :
+               (s == app.tr("m"))  ? app.tr("meters") :
+               (s == app.tr("mi")) ? app.tr("miles")  : s;
     }
 
     function speed_value() {
-        var speed = 0.0;
         if (!py.ready) {
             return "";
         } else if (!gps.position.speedValid) {
-            return "";
+            return "—";
         } else if (app.conf.get("units") === "metric") {
-            speed = gps.position.speed * 3.6;
+            return Util.siground(gps.position.speed * 3.6);
         } else {
-            speed = gps.position.speed * 2.23694;
+            return Util.siground(gps.position.speed * 2.23694);
         }
-        return speed < 10 ? Math.round(speed * 10.0) / 10.0 : Math.round(speed);
     }
 
     function speed_unit() {
         if (!py.ready) {
             return "";
         } else if (app.conf.get("units") === "metric") {
-            return "km/h";
+            return app.tr("km/h");
         } else {
-            return "mph";
+            return app.tr("mph");
         }
     }
 }
