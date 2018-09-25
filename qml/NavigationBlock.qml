@@ -49,8 +49,8 @@ Rectangle {
     property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
     property var    street:    app.navigationStatus.street
-    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayAreaLeftValue.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
-    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayAreaLeftValue.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaLeftValue.width, iconImage.width) : 0
+    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayAreaA.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
+    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayAreaA.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaA.width, iconImage.width) : 0
 
     Rectangle {
         id: progressComplete
@@ -87,7 +87,7 @@ Rectangle {
             id: displayAreaGrid
             columns: 4
             rows: 1
-            height: Math.max(iconImage.height, displayAreaLeft.height, displayAreaMiddle.height, displayAreaRight.height)
+            height: Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
             width: parent.width
 
             Image {
@@ -108,8 +108,8 @@ Rectangle {
             }
 
             NavigationBlockElement {
-                // Left area, e.g. a distance to the next maneuver
-                id: displayAreaLeft
+                // Left (or top) area, e.g. a distance to the next maneuver
+                id: displayAreaA
                 width: (displayArea.width - iconImage.width) / 3
                 value: token(block.manDist, " ", 0)
                 caption: long_word_distance(token(block.manDist, " ", 1))
@@ -117,16 +117,16 @@ Rectangle {
 
             NavigationBlockElement {
                 // Middle area, e.g. current speed
-                id: displayAreaMiddle
-                width: displayAreaLeft.width
+                id: displayAreaB
+                width: displayAreaA.width
                 value: speed_value()
                 caption: speed_unit()
             }
 
             NavigationBlockElement {
-                // Right area, e.g. a distance to the destination or ETA
-                id: displayAreaRight
-                width: displayAreaMiddle.width
+                // Right (or bottom) area, e.g. a distance to the destination or ETA
+                id: displayAreaC
+                width: displayAreaB.width
                 value: block.destEta
                 caption: app.tr("ETA")
             }
