@@ -75,58 +75,61 @@ Rectangle {
         radius: progressComplete.radius
     }
 
-    Row {
+    Item {
         // Display area, split into: maneuver icon, left, middle and right
         id: displayArea
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.top: progressComplete.bottom
-        height: app.portrait ? implicitHeight : 0
-        visible: app.portrait
+        height: displayAreaGrid.height
 
-        Image {
-            // Icon for the next maneuver
-            id: iconImage
-            anchors.leftMargin: Theme.paddingSmall
-            anchors.rightMargin: Theme.paddingSmall
-            anchors.topMargin: Theme.paddingSmall
-            anchors.bottomMargin: Theme.paddingSmall
-            anchors.top: parent.top
-            fillMode: Image.Pad
-            height: block.notify ? sourceSize.height : 0
-            opacity: 0.9
-            smooth: true
-            source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
-            sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
-            sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
-            width: block.notify ? sourceSize.width : 0
-        }
+        Grid {
+            id: displayAreaGrid
+            columns: 4
+            rows: 1
+            height: Math.max(iconImage.height, displayAreaLeft.height, displayAreaMiddle.height, displayAreaRight.height)
+            width: parent.width
 
-        NavigationBlockElement {
-            // Left area, e.g. a distance to the next maneuver
-            id: displayAreaLeft
-            anchors.top: parent.top
-            width: (parent.width - iconImage.width) / 3
-            value: token(block.manDist, " ", 0)
-            caption: long_word_distance(token(block.manDist, " ", 1))
-        }
+            Image {
+                // Icon for the next maneuver
+                id: iconImage
+                anchors.leftMargin: Theme.paddingSmall
+                anchors.rightMargin: Theme.paddingSmall
+                anchors.topMargin: Theme.paddingSmall
+                anchors.bottomMargin: Theme.paddingSmall
+                fillMode: Image.Pad
+                height: block.notify ? sourceSize.height : 0
+                opacity: 0.9
+                smooth: true
+                source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
+                sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
+                sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
+                width: block.notify ? sourceSize.width : 0
+            }
 
-        NavigationBlockElement {
-            // Middle area, e.g. current speed
-            id: displayAreaMiddle
-            anchors.top: parent.top
-            width: displayAreaLeft.width
-            value: speed_value()
-            caption: speed_unit()
-        }
+            NavigationBlockElement {
+                // Left area, e.g. a distance to the next maneuver
+                id: displayAreaLeft
+                width: (displayArea.width - iconImage.width) / 3
+                value: token(block.manDist, " ", 0)
+                caption: long_word_distance(token(block.manDist, " ", 1))
+            }
 
-        NavigationBlockElement {
-            // Right area, e.g. a distance to the destination or ETA
-            id: displayAreaRight
-            anchors.top: parent.top
-            width: displayAreaLeft.width
-            value: block.destEta
-            caption: app.tr("ETA")
+            NavigationBlockElement {
+                // Middle area, e.g. current speed
+                id: displayAreaMiddle
+                width: displayAreaLeft.width
+                value: speed_value()
+                caption: speed_unit()
+            }
+
+            NavigationBlockElement {
+                // Right area, e.g. a distance to the destination or ETA
+                id: displayAreaRight
+                width: displayAreaMiddle.width
+                value: block.destEta
+                caption: app.tr("ETA")
+            }
         }
     }
 
