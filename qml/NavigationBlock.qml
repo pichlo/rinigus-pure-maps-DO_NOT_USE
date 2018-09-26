@@ -19,26 +19,24 @@
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 
-Rectangle {
+import "js/util.js" as Util
+
+// The navigation block comprises three main sections:
+// 1. The progress bar;
+// 2. A multi-purpose display area containing the next maneuver icon
+//    and three configurable zones;
+// 3. A narrative label, showing a street name, next maneuver etc.
+// Depending on the screen orientation, the three sections are laid out
+// either top to bottom or left to right.
+// The multi-purpose display is equally laid out left to right (in portrait)
+// or top to bottom (in landscape).
+
+Grid {
     id: block
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: parent.top
-    color: app.styler.blockBg
-    height: (app.portrait && notify ? progressComplete.height + displayArea.height : 0) + narrativeLabel.height
-    states: [
-        State {
-            when: !app.portrait && destDist && notify
-            AnchorChanges {
-                target: block
-                anchors.left: undefined
-            }
-            PropertyChanges {
-                target: block
-                width: parent.width - shieldLeftWidth
-            }
-        }
-    ]
+    columns: app.portrait ? 1 : 4
+    rows: app.portrait ? 4 : 1
+    width: notify ? app.screenWidth : 0
+    height: notify ? (app.portrait ? (progressBar.height + displayArea.height + labels.height) : app.screenHeight) : 0
 
     property string destDist:  app.navigationStatus.destDist
     property string destEta:   app.navigationStatus.destEta
@@ -49,46 +47,63 @@ Rectangle {
     property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
     property var    street:    app.navigationStatus.street
-    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayAreaA.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
-    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayAreaA.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaA.width, iconImage.width) : 0
+    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayArea.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
+    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayArea.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaA.width, iconImage.width) : 0
 
     Rectangle {
-        id: progressComplete
-        anchors.left: parent.left
-        anchors.top: parent.top
-        color: Theme.primaryColor
-        height: app.portrait && block.notify ? Theme.paddingSmall : 0
-        visible: height > 0
-        radius: height / 2
-        width: app.navigationStatus.progress * displayArea.width
+        // Section one, the progress bar
+        // Placed along the top or the left side of the screen
+        id: progressBar
+        width: block.notify ? (app.portrait ? block.width : Theme.paddingSmall) : 0
+        height: block.notify ? (app.portrait ? Theme.paddingSmall : block.height) : 0
+        color: app.styler.blockBg
+
+        Rectangle {
+            id: progressComplete
+            anchors.left: parent.left
+            anchors.top: parent.top
+            color: Theme.primaryColor
+            height: app.portrait && block.notify ? Theme.paddingSmall : 0
+            radius: Theme.paddingSmall / 2
+            width: app.navigationStatus.progress * displayArea.width
+        }
+
+        Rectangle {
+            id: progressRemaining
+            anchors.left: progressComplete.left
+            anchors.right: parent.right
+            anchors.top: progressComplete.top
+            color: Theme.primaryColor
+            opacity: 0.1
+            height: progressComplete.height
+            visible: progressComplete.visible
+            radius: progressComplete.radius
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: app.showNavigationPages();
+        }
     }
 
     Rectangle {
-        id: progressRemaining
-        anchors.left: progressComplete.left
-        anchors.right: parent.right
-        anchors.top: progressComplete.top
-        color: Theme.primaryColor
-        opacity: 0.1
-        height: progressComplete.height
-        visible: progressComplete.visible
-        radius: progressComplete.radius
-    }
-
-    Item {
-        // Display area, split into: maneuver icon, left, middle and right
+        // Section two, display area, split into: maneuver icon and three display zones
+        // Placed immediately below (or to the right of) the progress bar
         id: displayArea
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.top: progressComplete.bottom
-        height: displayAreaGrid.height
+        width: block.notify ? (app.portrait ? block.width : displayAreaGrid.width) : 0
+        height: block.notify ? (app.portrait ? displayAreaGrid.height : block.height) : 0
+        color: app.styler.blockBg
 
         Grid {
             id: displayAreaGrid
-            columns: 4
-            rows: 1
-            height: Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
-            width: parent.width
+            columns: app.portrait ? 4 : 1
+            rows: app.portrait ? 1 : 4
+            height: app.portrait
+                        ? Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
+                        : block.height
+            width: app.portrait
+                       ? block.width
+                       : Math.max(iconImage.width, displayAreaA.width, displayAreaB.width, displayAreaC.width)
 
             Image {
                 // Icon for the next maneuver
@@ -110,7 +125,9 @@ Rectangle {
             NavigationBlockElement {
                 // Left (or top) area, e.g. a distance to the next maneuver
                 id: displayAreaA
-                width: (displayArea.width - iconImage.width) / 3
+                width: app.portrait
+                           ? (block.width - iconImage.width) / 3
+                           : Math.max(iconImage.width, implicitWidth, displayAreaB.width, displayAreaC.width)
                 value: token(block.manDist, " ", 0)
                 caption: long_word_distance(token(block.manDist, " ", 1))
             }
@@ -118,7 +135,9 @@ Rectangle {
             NavigationBlockElement {
                 // Middle area, e.g. current speed
                 id: displayAreaB
-                width: displayAreaA.width
+                width: app.portrait
+                           ? (block.width - iconImage.width) / 3
+                           : Math.max(iconImage.width, displayAreaA.width, implicitWidth, displayAreaC.width)
                 value: speed_value()
                 caption: speed_unit()
             }
@@ -126,49 +145,76 @@ Rectangle {
             NavigationBlockElement {
                 // Right (or bottom) area, e.g. a distance to the destination or ETA
                 id: displayAreaC
-                width: displayAreaB.width
+                width: app.portrait
+                           ? (block.width - iconImage.width) / 3
+                           : Math.max(iconImage.width, displayAreaA.width, displayAreaB.width, implicitWidth)
                 value: block.destEta
                 caption: app.tr("ETA")
             }
         }
-    }
 
-    Label {
-        // Street name or instruction text for the next maneuver
-        id: narrativeLabel
-        anchors.left: parent.left
-        anchors.leftMargin: Theme.paddingLarge
-        anchors.right: parent.right
-        anchors.rightMargin: Theme.paddingLarge
-        anchors.top: displayArea.bottom
-        color: Theme.primaryColor
-        font.pixelSize: streetNameShown ? Theme.fontSizeExtraLarge : Theme.fontSizeMedium
-        height: text ? implicitHeight + Theme.paddingMedium : 0
-        maximumLineCount: streetNameShown ? 1 : 2
-        truncationMode: TruncationMode.Fade
-        text: block.notify
-                  ? (app.navigationPageSeen
-                         ? (block.street ? streetName : block.narrative)
-                         : app.tr("Tap to review maneuvers or begin navigating"))
-                  : ""
-        verticalAlignment: Text.AlignTop
-        horizontalAlignment: Text.AlignHCenter
-        wrapMode: Text.WordWrap
-
-        property bool streetNameShown: block.notify && app.navigationPageSeen && block.street
-        property string streetName: {
-            var s = "";
-            for (var i in block.street) {
-                if (s != "") s += "; "
-                s += block.street[i];
-            }
-            return s;
+        MouseArea {
+            anchors.fill: parent
+            onClicked: app.showNavigationPages();
         }
     }
 
-    MouseArea {
-        anchors.fill: parent
-        onClicked: app.showNavigationPages();
+    Rectangle {
+        // Dummy spacer, only taking effect in landscape mode
+        id: spacer
+        width: (app.screenWidth - app.screenHeight - displayArea.width - progressBar.width) / 2
+        height: app.portrait ? 0 : width
+        opacity: 0
+    }
+
+    Rectangle {
+        // Street name or instruction text for the next maneuver
+        id: labels
+        width: block.notify
+                   ? (block.width - (app.portrait
+                                         ? 0
+                                         : displayArea.width + progressBar.width + (2 * spacer.width)))
+                   : 0
+        height: block.notify ? narrativeLabel.height : 0
+        radius: app.portrait ? 0 : Theme.paddingLarge
+        color: app.styler.blockBg
+
+        Label {
+            id: narrativeLabel
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.leftMargin: Theme.paddingLarge
+            anchors.rightMargin: Theme.paddingLarge
+            color: Theme.primaryColor
+            font.pixelSize: streetNameShown ? Theme.fontSizeExtraLarge : Theme.fontSizeMedium
+            height: text ? implicitHeight + Theme.paddingMedium : 0
+            maximumLineCount: streetNameShown ? 1 : 2
+            truncationMode: TruncationMode.Fade
+            text: block.notify
+                      ? (app.navigationPageSeen
+                             ? (block.street ? streetName : block.narrative)
+                             : app.tr("Tap to review maneuvers or begin navigating"))
+                      : ""
+            verticalAlignment: Text.AlignTop
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode: Text.WordWrap
+
+            property bool streetNameShown: block.notify && app.navigationPageSeen && block.street
+            property string streetName: {
+                var s = "";
+                for (var i in block.street) {
+                    if (s != "") s += "; "
+                    s += block.street[i];
+                }
+                return s;
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: app.showNavigationPages();
+        }
     }
 
     function token(s, t, n) {
