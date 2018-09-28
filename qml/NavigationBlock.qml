@@ -54,8 +54,8 @@ Grid {
         // Section one, the progress bar
         // Placed along the top or the left side of the screen
         id: progressBar
-        width: block.notify ? (app.portrait ? block.width : Theme.paddingSmall) : 0
-        height: block.notify ? (app.portrait ? Theme.paddingSmall : block.height) : 0
+        width: block.notify ? (app.portrait ? app.screenWidth : Theme.paddingSmall) : 0
+        height: block.notify ? (app.portrait ? Theme.paddingSmall : app.screenHeight) : 0
         color: app.styler.blockBg
 
         Rectangle {
@@ -90,8 +90,8 @@ Grid {
         // Section two, display area, split into: maneuver icon and three display zones
         // Placed immediately below (or to the right of) the progress bar
         id: displayArea
-        width: block.notify ? (app.portrait ? block.width : displayAreaGrid.width) : 0
-        height: block.notify ? (app.portrait ? displayAreaGrid.height : block.height) : 0
+        width: block.notify ? (app.portrait ? app.screenWidth : displayAreaGrid.width) : 0
+        height: block.notify ? (app.portrait ? displayAreaGrid.height : app.screenHeight) : 0
         color: app.styler.blockBg
 
         Grid {
@@ -100,10 +100,14 @@ Grid {
             rows: app.portrait ? 1 : 4
             height: app.portrait
                         ? Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
-                        : block.height
-            width: app.portrait
-                       ? block.width
-                       : Math.max(iconImage.width, displayAreaA.width, displayAreaB.width, displayAreaC.width)
+                        : app.screenHeight
+            width: app.portrait ? app.screenWidth : calculatedWidth
+
+            // The display area comprises a next maneuver icon and three information zones,
+            // lined up side by side or top to bottom.
+            // Here, we work out what each zone's width would be in portrait and save it
+            // to use in both portraid and landscape, when elements are stocked vertically.
+            property real calculatedWidth: ((app.portrait ? app.screenWidth : app.screenHeight) - iconImage.sourceSize.width) / 3
 
             Image {
                 // Icon for the next maneuver
@@ -113,21 +117,19 @@ Grid {
                 anchors.topMargin: Theme.paddingSmall
                 anchors.bottomMargin: Theme.paddingSmall
                 fillMode: Image.Pad
-                height: block.notify ? sourceSize.height : 0
                 opacity: 0.9
                 smooth: true
                 source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
                 sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
                 sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
-                width: block.notify ? sourceSize.width : 0
+                height: sourceSize.height
+                width: app.portrait ? sourceSize.width : parent.calculatedWidth
             }
 
             NavigationBlockElement {
                 // Left (or top) area, e.g. a distance to the next maneuver
                 id: displayAreaA
-                width: app.portrait
-                           ? (block.width - iconImage.width) / 3
-                           : Math.max(iconImage.width, implicitWidth, displayAreaB.width, displayAreaC.width)
+                width: parent.calculatedWidth
                 value: token(block.manDist, " ", 0)
                 caption: long_word_distance(token(block.manDist, " ", 1))
             }
@@ -135,9 +137,7 @@ Grid {
             NavigationBlockElement {
                 // Middle area, e.g. current speed
                 id: displayAreaB
-                width: app.portrait
-                           ? (block.width - iconImage.width) / 3
-                           : Math.max(iconImage.width, displayAreaA.width, implicitWidth, displayAreaC.width)
+                width: parent.calculatedWidth
                 value: speed_value()
                 caption: speed_unit()
             }
@@ -145,9 +145,7 @@ Grid {
             NavigationBlockElement {
                 // Right (or bottom) area, e.g. a distance to the destination or ETA
                 id: displayAreaC
-                width: app.portrait
-                           ? (block.width - iconImage.width) / 3
-                           : Math.max(iconImage.width, displayAreaA.width, displayAreaB.width, implicitWidth)
+                width: parent.calculatedWidth
                 value: block.destEta
                 caption: app.tr("ETA")
             }
@@ -171,9 +169,9 @@ Grid {
         // Street name or instruction text for the next maneuver
         id: labels
         width: block.notify
-                   ? (block.width - (app.portrait
-                                         ? 0
-                                         : displayArea.width + progressBar.width + (2 * spacer.width)))
+                   ? (app.portrait
+                          ? app.screenWidth
+                          : app.screenWidth - displayArea.width - progressBar.width - (2 * spacer.width))
                    : 0
         height: block.notify ? narrativeLabel.height : 0
         radius: app.portrait ? 0 : Theme.paddingLarge
