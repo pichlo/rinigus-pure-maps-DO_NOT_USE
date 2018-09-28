@@ -180,7 +180,10 @@ function shallowCopy(obj) {
 
 function siground(x, n) {
     // Round x to n significant digits.
-    var mult = Math.pow(10, n - Math.floor(Math.log(x) / Math.LN10) - 1);
+    var mult = Math.pow(10, n - 1);
+    if (x > mult) {
+        mult = 1;
+    }
     return Math.round(x * mult) / mult;
 }
 

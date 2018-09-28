@@ -490,8 +490,10 @@ def round_distance(meters, n=2):
 
 def siground(x, n):
     """Round `x` to `n` significant digits."""
-    mult = 10**(n - math.floor(math.log10(x)) - 1)
-    return round(x * mult) / mult
+    mult = 10**(n - 1)
+    if x < mult:
+        return round(x * mult) / mult
+    return round(x)
 
 @contextlib.contextmanager
 def silent(*exceptions, tb=False):
