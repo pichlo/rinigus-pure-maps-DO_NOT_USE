@@ -21,22 +21,21 @@ import Sailfish.Silica 1.0
 
 import "js/util.js" as Util
 
-// The navigation block comprises three main sections:
+// The navigation block comprises two main sections:
 // 1. The progress bar;
 // 2. A multi-purpose display area containing the next maneuver icon
-//    and three configurable zones;
-// 3. A narrative label, showing a street name, next maneuver etc.
-// Depending on the screen orientation, the three sections are laid out
+//    and three configurable zones.
+// Depending on the screen orientation, the sections are laid out
 // either top to bottom or left to right.
 // The multi-purpose display is equally laid out left to right (in portrait)
 // or top to bottom (in landscape).
 
 Grid {
     id: block
-    columns: app.portrait ? 1 : 4
-    rows: app.portrait ? 4 : 1
-    width: notify ? app.screenWidth : 0
-    height: notify ? (app.portrait ? (progressBar.height + displayArea.height + narrativeLabel.height) : app.screenHeight) : 0
+    columns: app.portrait ? 1 : 2
+    rows: app.portrait ? 2 : 1
+    width: notify ? (app.portrait ? app.screenWidth : (progressBar.width + displayArea.width)) : 0
+    height: notify ? (app.portrait ? (progressBar.height + displayArea.height) : app.screenHeight) : 0
 
     property string destDist:  app.navigationStatus.destDist
     property string destEta:   app.navigationStatus.destEta
@@ -44,9 +43,7 @@ Grid {
     property string icon:      app.navigationStatus.icon
     property string manDist:   app.navigationStatus.manDist
     property string manTime:   app.navigationStatus.manTime
-    property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
-    property var    street:    app.navigationStatus.street
 
     Rectangle {
         // Section one, the progress bar
@@ -184,65 +181,6 @@ Grid {
                 width: parent.calculatedWidth
                 value: block.destEta
                 caption: app.tr("ETA")
-            }
-        }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: app.showNavigationPages();
-        }
-    }
-
-    Rectangle {
-        // Dummy spacer, only taking effect in landscape mode
-        id: spacer
-        width: app.portrait ?  0 : (app.screenWidth - app.screenHeight - displayArea.width - progressBar.width) / 2
-        height: width
-        opacity: 0
-    }
-
-    Rectangle {
-        // Section three, street name or instruction text for the next maneuver
-        // Placed below the multi-function display area in portrait and along the top of the screen in landscape
-        id: narrativeLabel
-        width: block.notify
-                   ? (app.portrait
-                          ? app.screenWidth
-                          : app.screenWidth - displayArea.width - progressBar.width - (2 * spacer.width))
-                   : 0
-        height: block.notify ? narrativeLabelText.height : 0
-        radius: app.portrait ? 0 : Theme.paddingMedium
-        color: app.styler.blockBg
-
-        Label {
-            id: narrativeLabelText
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.top: parent.top
-            anchors.leftMargin: Theme.paddingLarge
-            anchors.rightMargin: Theme.paddingLarge
-            color: Theme.primaryColor
-            font.pixelSize: streetNameShown ? Theme.fontSizeExtraLarge : Theme.fontSizeMedium
-            height: text ? implicitHeight + Theme.paddingMedium : 0
-            maximumLineCount: streetNameShown ? 1 : 2
-            truncationMode: TruncationMode.Fade
-            text: block.notify
-                      ? (app.navigationPageSeen
-                             ? (block.street ? streetName : block.narrative)
-                             : app.tr("Tap to review maneuvers or begin navigating"))
-                      : ""
-            verticalAlignment: Text.AlignTop
-            horizontalAlignment: Text.AlignHCenter
-            wrapMode: Text.WordWrap
-
-            property bool streetNameShown: block.notify && app.navigationPageSeen && block.street
-            property string streetName: {
-                var s = "";
-                for (var i in block.street) {
-                    if (s != "") s += "; "
-                    s += block.street[i];
-                }
-                return s;
             }
         }
 

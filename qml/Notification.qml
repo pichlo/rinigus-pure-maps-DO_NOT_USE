@@ -22,7 +22,7 @@ import "."
 
 Bubble {
     id: bubble
-    anchorItem: navigationBlock
+    anchorItem: narrativeLabel
     anchors.topMargin: Theme.paddingLarge
     opacity: 0
     showArrow: false
@@ -54,5 +54,4 @@ Bubble {
         bubble.opacity = 1;
         timer.stop();
     }
-
 }

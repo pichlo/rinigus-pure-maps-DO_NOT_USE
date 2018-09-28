@@ -26,7 +26,8 @@ import "js/util.js" as Util
 
 MapboxMap {
     id: map
-    anchors.fill: parent
+    anchors.right: parent.right
+    anchors.bottom: parent.bottom
     cacheDatabaseDefaultPath: true
     cacheDatabaseStoreSettings: false
     center: QtPositioning.coordinate(49, 13)
@@ -34,6 +35,25 @@ MapboxMap {
     pitch: app.navigationActive && format !== "raster" && map.autoRotate && app.conf.tiltWhenNavigating ? 60 : 0
     pixelRatio: Theme.pixelRatio * 1.5
     zoomLevel: 4.0
+
+    states: [
+        State {
+            when: app.portrait
+            AnchorChanges {
+                target: map
+                anchors.top: navigationBlock.bottom
+                anchors.left: parent.left
+            }
+        },
+        State {
+            when: !app.portrait
+            AnchorChanges {
+                target: map
+                anchors.top: parent.top
+                anchors.left: navigationBlock.right
+            }
+        }
+    ]
 
     // Token for Mapbox.com-hosted maps, i.e. sources with mapbox:// URLs.
     accessToken: "pk.eyJ1IjoicmluaWd1cyIsImEiOiJjamxiMWF2N3gxNDI4M2ttdHNsYWxoOGFyIn0.0znRguypZfUcijqfBFyP3g"
@@ -207,7 +227,7 @@ MapboxMap {
 
     function _addPoi(poi) {
         if (hasPoi(poi)) return false; // avoid duplicates
-        // Add new POI marker to the map.        
+        // Add new POI marker to the map.
         map.pois.push({
             "address": poi.address || "",
             "bookmarked": poi.bookmarked || false,
@@ -718,5 +738,4 @@ MapboxMap {
         // Update route polyline on the map.
         map.updateSourceLine(map.sources.route, map.route.coordinates);
     }
-
 }

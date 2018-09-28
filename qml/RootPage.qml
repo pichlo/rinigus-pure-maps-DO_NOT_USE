@@ -28,6 +28,7 @@ Page {
     Map { id: map }
     MenuButton { id: menuButton }
     Meters { id: meters }
+    NarrativeLabel { id: narrativeLabel }
     NavigationBlock { id: navigationBlock }
     NavigationSign { id: navigationSign }
     NorthArrow { id: northArrow }
@@ -44,5 +45,4 @@ Page {
         app.notification = notification;
         app.remorse = remorse;
     }
-
 }
