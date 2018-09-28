@@ -36,7 +36,7 @@ Grid {
     columns: app.portrait ? 1 : 4
     rows: app.portrait ? 4 : 1
     width: notify ? app.screenWidth : 0
-    height: notify ? (app.portrait ? (progressBar.height + displayArea.height + labels.height) : app.screenHeight) : 0
+    height: notify ? (app.portrait ? (progressBar.height + displayArea.height + narrativeLabel.height) : app.screenHeight) : 0
 
     property string destDist:  app.navigationStatus.destDist
     property string destEta:   app.navigationStatus.destEta
@@ -68,12 +68,36 @@ Grid {
         Rectangle {
             id: progressComplete
             anchors.left: parent.left
-            anchors.top: app.portrait ? parent.top : undefined
-            anchors.bottom: app.portrait ? undefined : parent.bottom
             color: Theme.primaryColor
-            height: app.portrait ?Theme.paddingSmall : app.navigationStatus.progress * displayArea.height
             radius: Theme.paddingSmall / 2
-            width: app.portrait ? app.navigationStatus.progress * displayArea.width : Theme.paddingSmall 
+            states: [
+                State {
+                    when: app.portrait
+                    AnchorChanges {
+                        target: progressComplete
+                        anchors.top: parent.top
+                        anchors.bottom: undefined
+                    }
+                    PropertyChanges {
+                        target: progressComplete
+                        height: parent.height
+                        width: app.navigationStatus.progress * displayArea.width
+                    }
+                },
+                State {
+                    when: !app.portrait
+                    AnchorChanges {
+                        target: progressComplete
+                        anchors.top: undefined
+                        anchors.bottom: parent.bottom
+                    }
+                    PropertyChanges {
+                        target: progressComplete
+                        height: app.navigationStatus.progress * displayArea.height
+                        width: parent.width
+                    }
+                }
+            ]
         }
 
         MouseArea {
@@ -178,19 +202,20 @@ Grid {
     }
 
     Rectangle {
-        // Street name or instruction text for the next maneuver
-        id: labels
+        // Section three, street name or instruction text for the next maneuver
+        // Placed below the multi-function display area in portrait and along the top of the screen in landscape
+        id: narrativeLabel
         width: block.notify
                    ? (app.portrait
                           ? app.screenWidth
                           : app.screenWidth - displayArea.width - progressBar.width - (2 * spacer.width))
                    : 0
-        height: block.notify ? narrativeLabel.height : 0
-        radius: app.portrait ? 0 : Theme.paddingLarge / 2
+        height: block.notify ? narrativeLabelText.height : 0
+        radius: app.portrait ? 0 : Theme.paddingMedium
         color: app.styler.blockBg
 
         Label {
-            id: narrativeLabel
+            id: narrativeLabelText
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: parent.top
