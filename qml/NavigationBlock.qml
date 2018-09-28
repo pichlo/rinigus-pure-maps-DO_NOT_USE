@@ -47,8 +47,8 @@ Grid {
     property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
     property var    street:    app.navigationStatus.street
-    property int    shieldLeftHeight: !app.portrait && destDist && notify ? displayArea.height + Theme.paddingMedium + iconImage.height + iconImage.anchors.topMargin : 0
-    property int    shieldLeftWidth:  !app.portrait && destDist && notify ? displayArea.anchors.leftMargin + Theme.paddingLarge + Math.max(displayAreaA.width, iconImage.width) : 0
+    property int    shieldLeftHeight: 0
+    property int    shieldLeftWidth:  0
 
     Rectangle {
         // Section one, the progress bar
@@ -59,25 +59,23 @@ Grid {
         color: app.styler.blockBg
 
         Rectangle {
-            id: progressComplete
-            anchors.left: parent.left
-            anchors.top: parent.top
+            // It would be nice to do away with this rectangle, by making the parent the right colour.
+            // Suggestions are welcome.
+            id: progressShading
+            anchors.fill: parent
             color: Theme.primaryColor
-            height: app.portrait && block.notify ? Theme.paddingSmall : 0
-            radius: Theme.paddingSmall / 2
-            width: app.navigationStatus.progress * displayArea.width
+            opacity: 0.1
         }
 
         Rectangle {
-            id: progressRemaining
-            anchors.left: progressComplete.left
-            anchors.right: parent.right
-            anchors.top: progressComplete.top
+            id: progressComplete
+            anchors.left: parent.left
+            anchors.top: app.portrait ? parent.top : undefined
+            anchors.bottom: app.portrait ? undefined : parent.bottom
             color: Theme.primaryColor
-            opacity: 0.1
-            height: progressComplete.height
-            visible: progressComplete.visible
-            radius: progressComplete.radius
+            height: app.portrait ?Theme.paddingSmall : app.navigationStatus.progress * displayArea.height
+            radius: Theme.paddingSmall / 2
+            width: app.portrait ? app.navigationStatus.progress * displayArea.width : Theme.paddingSmall 
         }
 
         MouseArea {
@@ -96,8 +94,8 @@ Grid {
 
         Grid {
             id: displayAreaGrid
-            columns: app.portrait ? 4 : 1
-            rows: app.portrait ? 1 : 4
+            columns: app.portrait ? 6 : 1
+            rows: app.portrait ? 1 : 6
             height: app.portrait
                         ? Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
                         : app.screenHeight
@@ -107,7 +105,8 @@ Grid {
             // lined up side by side or top to bottom.
             // Here, we work out what each zone's width would be in portrait and save it
             // to use in both portraid and landscape, when elements are stocked vertically.
-            property real calculatedWidth: ((app.portrait ? app.screenWidth : app.screenHeight) - iconImage.sourceSize.width) / 3
+            property real calculatedWidth: (((app.portrait ? app.screenWidth : app.screenHeight) - iconImage.sourceSize.width) / 3)
+                                           + (app.portrait ? 0 : (Theme.paddingMedium * 2))
 
             Image {
                 // Icon for the next maneuver
@@ -117,7 +116,6 @@ Grid {
                 anchors.topMargin: Theme.paddingSmall
                 anchors.bottomMargin: Theme.paddingSmall
                 fillMode: Image.Pad
-                opacity: 0.9
                 smooth: true
                 source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
                 sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
@@ -134,12 +132,28 @@ Grid {
                 caption: long_word_distance(token(block.manDist, " ", 1))
             }
 
+            Rectangle {
+                // Dummy spacer, only taking effect in landscape mode
+                id: spacerAB
+                width: app.portrait ?  0 : (app.screenHeight - iconImage.height - displayAreaA.height - displayAreaB.height - displayAreaC.height) / 3
+                height: width
+                opacity: 0
+            }
+
             NavigationBlockElement {
                 // Middle area, e.g. current speed
                 id: displayAreaB
                 width: parent.calculatedWidth
                 value: speed_value()
                 caption: speed_unit()
+            }
+
+            Rectangle {
+                // Dummy spacer, only taking effect in landscape mode
+                id: spacerBC
+                width: spacerAB.height
+                height: width
+                opacity: 0
             }
 
             NavigationBlockElement {
@@ -160,8 +174,8 @@ Grid {
     Rectangle {
         // Dummy spacer, only taking effect in landscape mode
         id: spacer
-        width: (app.screenWidth - app.screenHeight - displayArea.width - progressBar.width) / 2
-        height: app.portrait ? 0 : width
+        width: app.portrait ?  0 : (app.screenWidth - app.screenHeight - displayArea.width - progressBar.width) / 2
+        height: width
         opacity: 0
     }
 
@@ -174,7 +188,7 @@ Grid {
                           : app.screenWidth - displayArea.width - progressBar.width - (2 * spacer.width))
                    : 0
         height: block.notify ? narrativeLabel.height : 0
-        radius: app.portrait ? 0 : Theme.paddingLarge
+        radius: app.portrait ? 0 : Theme.paddingLarge / 2
         color: app.styler.blockBg
 
         Label {
@@ -240,9 +254,9 @@ Grid {
         } else if (!gps.position.speedValid) {
             return "—";
         } else if (app.conf.get("units") === "metric") {
-            return Util.siground(gps.position.speed * 3.6);
+            return Util.siground(gps.position.speed * 3.6, 2);
         } else {
-            return Util.siground(gps.position.speed * 2.23694);
+            return Util.siground(gps.position.speed * 2.23694, 2);
         }
     }
 
