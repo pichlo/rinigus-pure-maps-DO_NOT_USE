@@ -31,26 +31,6 @@ Item {
     anchors.topMargin: Theme.paddingLarge + Theme.paddingSmall
     anchors.rightMargin:  Theme.paddingLarge + Theme.paddingSmall
     height: app.navigationActive && app.portrait ? scaleBar.width : scaleBar.height
-    states: [
-        State {
-            when: app.navigationActive && !app.portrait
-            AnchorChanges {
-                target: master
-                anchors.bottom: navigationInfoBlockLandscapeRightShield.top
-                anchors.left: undefined
-                anchors.right: parent.right
-            }
-        },
-
-        State {
-            when: app.navigationActive
-            AnchorChanges {
-                target: master
-                anchors.bottom: undefined
-                anchors.top: attributionButton.bottom
-            }
-        }
-    ]
     visible: !app.poiActive
     width: app.navigationActive && app.portrait ? scaleBar.height : scaleBar.width
     z: 400

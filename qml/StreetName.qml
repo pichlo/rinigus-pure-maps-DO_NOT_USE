@@ -21,7 +21,7 @@ import Sailfish.Silica 1.0
 
 Rectangle {
     id: master
-    anchors.bottom: app.navigationActive ? (app.portrait ? navigationInfoBlock.top : parent.bottom) : menuButton.top
+    anchors.bottom: app.navigationActive ? parent.bottom : menuButton.top
     anchors.bottomMargin: app.navigationActive ? Theme.paddingSmall : 0
     anchors.left: parent.left
     anchors.leftMargin: Theme.paddingLarge
@@ -29,16 +29,6 @@ Rectangle {
     anchors.rightMargin: Theme.paddingLarge
     color: "transparent"
     height: cover.height
-    states: [
-        State {
-            when: app.navigationActive && !app.portrait
-            AnchorChanges {
-                target: master
-                anchors.left: navigationInfoBlockLandscapeLeftShield.right
-                anchors.right: navigationInfoBlockLandscapeRightShield.left
-            }
-        }
-    ]
     z: 400
 
     Rectangle {

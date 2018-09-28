@@ -47,8 +47,6 @@ Grid {
     property string narrative: app.navigationStatus.narrative
     property bool   notify:    app.navigationStatus.notify
     property var    street:    app.navigationStatus.street
-    property int    shieldLeftHeight: 0
-    property int    shieldLeftWidth:  0
 
     Rectangle {
         // Section one, the progress bar

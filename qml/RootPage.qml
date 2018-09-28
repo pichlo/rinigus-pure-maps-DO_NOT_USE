@@ -29,10 +29,6 @@ Page {
     MenuButton { id: menuButton }
     Meters { id: meters }
     NavigationBlock { id: navigationBlock }
-    NavigationBlockLandscapeLeftShield { id: navigationBlockLandscapeLeftShield }
-    NavigationInfoBlock { id: navigationInfoBlock }
-    NavigationInfoBlockLandscapeLeftShield { id: navigationInfoBlockLandscapeLeftShield }
-    NavigationInfoBlockLandscapeRightShield { id: navigationInfoBlockLandscapeRightShield }
     NavigationSign { id: navigationSign }
     NorthArrow { id: northArrow }
     Notification { id: notification }

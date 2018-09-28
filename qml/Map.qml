@@ -137,11 +137,6 @@ MapboxMap {
     }
 
     Connections {
-        target: navigationInfoBlock
-        onHeightChanged: map.updateMargins();
-    }
-
-    Connections {
         target: poiPanel
         onHeightChanged: map.updateMargins();
     }
@@ -674,7 +669,6 @@ MapboxMap {
         // Calculate new margins and set them for the map.
         var header = navigationBlock && navigationBlock.height > 0 ? navigationBlock.height : map.height*0.05;
         var footer = !app.poiActive && !app.navigationActive && menuButton ? map.height*0.05 : 0;
-        footer += !app.poiActive && app.navigationActive && app.portrait && navigationInfoBlock ? navigationInfoBlock.height : 0;
         footer += !app.poiActive && app.navigationActive && streetName ? streetName.height : 0
         footer += app.poiActive && poiPanel ? poiPanel.height : 0
 

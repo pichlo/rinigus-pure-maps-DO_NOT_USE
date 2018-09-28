@@ -31,15 +31,6 @@ Rectangle {
     color: "white"
     height: width
     radius: width/2
-    states: [
-        State {
-            when: !app.portrait && navigationInfoBlockLandscapeLeftShield.height > 0
-            AnchorChanges {
-                target: ring
-                anchors.bottom: navigationInfoBlockLandscapeLeftShield.top
-            }
-        }
-    ]
     width: Math.round(Math.max(limit.width,limit.height) + 1.6*Theme.paddingLarge + Theme.paddingSmall)
     visible: {
         if (!app.navigationActive || map.route.mode !== "car" || app.conf.showSpeedLimit==="never")
