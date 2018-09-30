@@ -30,102 +30,88 @@ import "js/util.js" as Util
 // The multi-purpose display is equally laid out left to right (in portrait)
 // or top to bottom (in landscape).
 
-Grid {
+Rectangle {
     id: block
-    columns: app.portrait ? 1 : 2
-    rows: app.portrait ? 2 : 1
     width: notify ? (app.portrait ? app.screenWidth : (progressBar.width + displayArea.width)) : 0
     height: notify ? (app.portrait ? (progressBar.height + displayArea.height) : app.screenHeight) : 0
+    color: app.styler.blockBg
 
-    property string destDist:  app.navigationStatus.destDist
-    property string destEta:   app.navigationStatus.destEta
-    property string destTime:  app.navigationStatus.destTime
-    property string icon:      app.navigationStatus.icon
-    property string manDist:   app.navigationStatus.manDist
-    property string manTime:   app.navigationStatus.manTime
-    property bool   notify:    app.navigationStatus.notify
+    property string destDist: app.navigationStatus.destDist
+    property string destEta:  app.navigationStatus.destEta
+    property string destTime: app.navigationStatus.destTime
+    property string icon:     app.navigationStatus.icon
+    property string manDist:  app.navigationStatus.manDist
+    property string manTime:  app.navigationStatus.manTime
+    property bool   notify:   app.navigationStatus.notify
 
-    Rectangle {
-        // Section one, the progress bar
-        // Placed along the top or the left side of the screen
-        id: progressBar
-        width: block.notify ? (app.portrait ? app.screenWidth : Theme.paddingSmall) : 0
-        height: block.notify ? (app.portrait ? Theme.paddingSmall : app.screenHeight) : 0
-        color: app.styler.blockBg
+    Grid {
+        columns: app.portrait ? 1 : 2
+        rows: app.portrait ? 2 : 1
 
         Rectangle {
-            // It would be nice to do away with this rectangle, by making the parent the right colour.
-            // Suggestions are welcome.
-            id: progressShading
-            anchors.fill: parent
+            // Section one, the progress bar
+            // Placed along the top or the left side of the screen
+            id: progressBar
+            width: block.notify ? (app.portrait ? app.screenWidth : Theme.paddingSmall) : 0
+            height: block.notify ? (app.portrait ? Theme.paddingSmall : app.screenHeight) : 0
+            // Draw a shaded background
             color: Theme.primaryColor
             opacity: 0.1
-        }
 
-        Rectangle {
-            id: progressComplete
-            anchors.left: parent.left
-            color: Theme.primaryColor
-            radius: Theme.paddingSmall / 2
-            states: [
-                State {
-                    when: app.portrait
-                    AnchorChanges {
-                        target: progressComplete
-                        anchors.top: parent.top
-                        anchors.bottom: undefined
+            Rectangle {
+                id: progressComplete
+                anchors.left: parent.left
+                color: Theme.primaryColor
+                radius: Theme.paddingSmall / 2
+                states: [
+                    State {
+                        when: app.portrait
+                        AnchorChanges {
+                            target: progressComplete
+                            anchors.top: parent.top
+                            anchors.bottom: undefined
+                        }
+                        PropertyChanges {
+                            target: progressComplete
+                            height: parent.height
+                            width: app.navigationStatus.progress * displayArea.width
+                        }
+                    },
+                    State {
+                        when: !app.portrait
+                        AnchorChanges {
+                            target: progressComplete
+                            anchors.top: undefined
+                            anchors.bottom: parent.bottom
+                        }
+                        PropertyChanges {
+                            target: progressComplete
+                            height: app.navigationStatus.progress * displayArea.height
+                            width: parent.width
+                        }
                     }
-                    PropertyChanges {
-                        target: progressComplete
-                        height: parent.height
-                        width: app.navigationStatus.progress * displayArea.width
-                    }
-                },
-                State {
-                    when: !app.portrait
-                    AnchorChanges {
-                        target: progressComplete
-                        anchors.top: undefined
-                        anchors.bottom: parent.bottom
-                    }
-                    PropertyChanges {
-                        target: progressComplete
-                        height: app.navigationStatus.progress * displayArea.height
-                        width: parent.width
-                    }
-                }
-            ]
+                ]
+            }
         }
-
-        MouseArea {
-            anchors.fill: parent
-            onClicked: app.showNavigationPages();
-        }
-    }
-
-    Rectangle {
-        // Section two, display area, split into: maneuver icon and three display zones
-        // Placed immediately below (or to the right of) the progress bar
-        id: displayArea
-        width: block.notify ? (app.portrait ? app.screenWidth : displayAreaGrid.width) : 0
-        height: block.notify ? (app.portrait ? displayAreaGrid.height : app.screenHeight) : 0
-        color: app.styler.blockBg
 
         Grid {
-            id: displayAreaGrid
+            // Section two, display area, split into: maneuver icon and three display zones
+            // Placed immediately below (or to the right of) the progress bar
+            id: displayArea
             columns: app.portrait ? 6 : 1
             rows: app.portrait ? 1 : 6
             height: app.portrait
-                        ? Math.max(iconImage.height, displayAreaA.height, displayAreaB.height, displayAreaC.height)
+                        ? Math.max(iconImage.height, zoneA.height, zoneB.height, zoneC.height)
                         : app.screenHeight
             width: app.portrait ? app.screenWidth : calculatedWidth
 
             // The display area comprises a next maneuver icon and three information zones,
             // lined up side by side or top to bottom.
             // Here, we work out what each zone's width would be in portrait and save it
-            // to use in both portraid and landscape, when elements are stocked vertically.
-            property real calculatedWidth: (((app.portrait ? app.screenWidth : app.screenHeight) - iconImage.sourceSize.width) / 3)
-                                           + (app.portrait ? 0 : (Theme.paddingMedium * 2))
+            // to use in both portrait and landscape, when elements are stocked vertically.
+            property real calculatedWidth: app.portrait
+                                               ? (app.screenWidth - iconImage.sourceSize.width) / 3
+                                               : (app.screenHeight - iconImage.sourceSize.width) / 3 + (Theme.paddingMedium * 2)
 
             Image {
                 // Icon for the next maneuver
@@ -145,7 +131,7 @@ Grid {
 
             NavigationBlockElement {
                 // Left (or top) area, e.g. a distance to the next maneuver
-                id: displayAreaA
+                id: zoneA
                 width: parent.calculatedWidth
                 value: token(block.manDist, " ", 0)
                 caption: long_word_distance(token(block.manDist, " ", 1))
@@ -154,14 +140,14 @@ Grid {
             Rectangle {
                 // Dummy spacer, only taking effect in landscape mode
                 id: spacerAB
-                width: app.portrait ?  0 : (app.screenHeight - iconImage.height - displayAreaA.height - displayAreaB.height - displayAreaC.height) / 3
+                width: app.portrait ?  0 : (app.screenHeight - iconImage.height - zoneA.height - zoneB.height - zoneC.height) / 3
                 height: width
                 opacity: 0
             }
 
             NavigationBlockElement {
                 // Middle area, e.g. current speed
-                id: displayAreaB
+                id: zoneB
                 width: parent.calculatedWidth
                 value: speed_value()
                 caption: speed_unit()
@@ -177,17 +163,17 @@ Grid {
 
             NavigationBlockElement {
                 // Right (or bottom) area, e.g. a distance to the destination or ETA
-                id: displayAreaC
+                id: zoneC
                 width: parent.calculatedWidth
                 value: block.destEta
                 caption: app.tr("ETA")
             }
         }
+    }
 
-        MouseArea {
-            anchors.fill: parent
-            onClicked: app.showNavigationPages();
-        }
+    MouseArea {
+        anchors.fill: parent
+        onClicked: app.showNavigationPages();
     }
 
     function token(s, t, n) {
