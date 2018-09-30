@@ -98,8 +98,8 @@ Rectangle {
             // Section two, display area, split into: maneuver icon and three display zones
             // Placed immediately below (or to the right of) the progress bar
             id: displayArea
-            columns: app.portrait ? 6 : 1
-            rows: app.portrait ? 1 : 6
+            columns: app.portrait ? 4 : 1
+            rows: app.portrait ? 1 : 4
             height: app.portrait
                         ? Math.max(iconImage.height, zoneA.height, zoneB.height, zoneC.height)
                         : app.screenHeight
@@ -133,32 +133,18 @@ Rectangle {
                 // Left (or top) area, e.g. a distance to the next maneuver
                 id: zoneA
                 width: parent.calculatedWidth
+                height: implicitHeight + (app.portrait ? 0 : (app.screenHeight - iconImage.height - 3 * implicitHeight - Theme.paddingLarge) / 2)
                 value: token(block.manDist, " ", 0)
                 caption: long_word_distance(token(block.manDist, " ", 1))
-            }
-
-            Rectangle {
-                // Dummy spacer, only taking effect in landscape mode
-                id: spacerAB
-                width: app.portrait ?  0 : (app.screenHeight - iconImage.height - zoneA.height - zoneB.height - zoneC.height) / 3
-                height: width
-                opacity: 0
             }
 
             NavigationBlockElement {
                 // Middle area, e.g. current speed
                 id: zoneB
                 width: parent.calculatedWidth
+                height: zoneA.height
                 value: speed_value()
                 caption: speed_unit()
-            }
-
-            Rectangle {
-                // Dummy spacer, only taking effect in landscape mode
-                id: spacerBC
-                width: spacerAB.height
-                height: width
-                opacity: 0
             }
 
             NavigationBlockElement {
