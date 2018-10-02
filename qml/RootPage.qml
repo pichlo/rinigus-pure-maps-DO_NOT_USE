@@ -23,22 +23,25 @@ Page {
     id: page
     allowedOrientations: app.defaultAllowedOrientations
 
-    AttributionButton { id: attributionButton }
-    CenterButton { id: centerButton }
-    Map { id: map }
-    MenuButton { id: menuButton }
-    Meters { id: meters }
-    NarrativeLabel { id: narrativeLabel }
     NavigationBlock { id: navigationBlock }
-    NavigationSign { id: navigationSign }
-    NorthArrow { id: northArrow }
-    Notification { id: notification }
-    PoiPanel { id: poiPanel }
+    Map {
+        id: map
+
+        AttributionButton { id: attributionButton }
+        CenterButton { id: centerButton }
+        MenuButton { id: menuButton }
+        Meters { id: meters }
+        NarrativeLabel { id: narrativeLabel }
+        NavigationSign { id: navigationSign }
+        NorthArrow { id: northArrow }
+        Notification { id: notification }
+        PoiPanel { id: poiPanel }
+        ScaleBar { id: scaleBar }
+        SpeedLimit { id: speedLimit }
+        StreetName { id: streetName }
+        ZoomLevel { id: zoomLevel }
+    }
     RemorsePopup { id: remorse; z: 1000 }
-    ScaleBar { id: scaleBar }
-    SpeedLimit { id: speedLimit }
-    StreetName { id: streetName }
-    ZoomLevel { id: zoomLevel }
 
     Component.onCompleted: {
         app.map = map;

@@ -23,7 +23,7 @@ Rectangle {
     id: block
     anchors.right: parent.right
     anchors.rightMargin: -Theme.paddingMedium
-    anchors.top: navigationBlock.bottom
+    anchors.top: parent.top
     anchors.topMargin: Theme.paddingSmall
     color: "#3768B7"
     height: {
@@ -63,7 +63,7 @@ Rectangle {
         color: "transparent"
         radius: Theme.paddingMedium
     }
-    
+
     Label {
         // Exit number
         id: numLabel

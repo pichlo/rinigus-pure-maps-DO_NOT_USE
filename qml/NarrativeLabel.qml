@@ -23,8 +23,8 @@ import "js/util.js" as Util
 
 Rectangle {
     id: block
-    anchors.top: map.top
-    anchors.horizontalCenter: map.horizontalCenter
+    anchors.top: parent.top
+    anchors.horizontalCenter: parent.horizontalCenter
     width: notify
                ? (app.portrait ? app.screenWidth : app.screenHeight)
                : 0
