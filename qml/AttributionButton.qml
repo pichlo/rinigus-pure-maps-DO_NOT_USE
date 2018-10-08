@@ -22,7 +22,7 @@ import Sailfish.Silica 1.0
 IconButton {
     id: attributionButton
     anchors.left: parent.left
-    anchors.top: parent.top
+    anchors.top: app.portrait ? narrativeLabel.bottom : parent.top
     height: icon.height
     icon.height: icon.sourceSize.height
     icon.smooth: false
