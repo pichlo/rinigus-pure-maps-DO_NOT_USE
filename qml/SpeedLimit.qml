@@ -33,7 +33,7 @@ Rectangle {
     radius: width/2
     width: Math.round(Math.max(limit.width,limit.height) + 1.6*Theme.paddingLarge + Theme.paddingSmall)
     visible: {
-        if (!app.navigationActive || map.route.mode !== "car" || app.conf.showSpeedLimit==="never")
+        if (app.mode === modes.explore || !map.route || map.route.mode !== "car" || app.conf.showSpeedLimit==="never")
             return false;
         if (app.conf.showSpeedLimit==="exceeding") {
             if (!gps.position.speedValid || gps.streetSpeedLimit==null || gps.streetSpeedLimit < 0)
@@ -57,7 +57,7 @@ Rectangle {
 
         Connections {
             target: app
-            onNavigationActiveChanged: limit.update()
+            onModeChanged: limit.update()
         }
 
         Connections {
@@ -69,7 +69,7 @@ Rectangle {
 
         function update() {
             // Update speed limit in user's preferred units.
-            if (!app.navigationActive) {
+            if (app.mode === modes.explore) {
                 if (text.length > 0) text = "";
                 return;
             }

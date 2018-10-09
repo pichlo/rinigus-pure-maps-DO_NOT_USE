@@ -41,15 +41,9 @@ ApplicationWindow {
     property bool hasMapMatching: false
     property bool initialized: false
     property var  map: null
-    property string mapMatchingMode: {
-        if (!hasMapMatching) return "none";
-        if (navigationActive) return mapMatchingModeNavigation;
-        return mapMatchingModeIdle;
-    }
-    property string mapMatchingModeIdle: app.conf.mapMatchingWhenIdle
-    property string mapMatchingModeNavigation: app.conf.mapMatchingWhenNavigating && map && map.route && map.route.mode ? map.route.mode : "none"
+    property string mapMatchingMode: "none"
+    property int    mode: modes.explore
     property bool   narrativePageSeen: false
-    property bool   navigationActive: false
     property bool   navigationPageSeen: false
     property var    navigationStatus: NavigationStatus {}
     property bool   navigationStarted: false
@@ -84,12 +78,23 @@ ApplicationWindow {
         loops: 1
     }
 
+    Modes {
+        id: modes
+    }
+
+    Connections {
+        target: app.conf
+        onMapMatchingWhenNavigatingChanged: app.updateMapMatching()
+        onMapMatchingWhenFollowingChanged: app.updateMapMatching()
+        onMapMatchingWhenIdleChanged: app.updateMapMatching()
+   }
+
     Component.onDestruction: {
-        if (!py.ready) return;
-        app.conf.set("auto_center", map.autoCenter);
-        app.conf.set("auto_rotate", map.autoRotate);
-        app.conf.set("center", [map.center.longitude, map.center.latitude]);
-        app.conf.set("zoom", map.zoomLevel);
+        if (!py.ready || !app.map) return;
+        app.conf.set("auto_center", app.map.autoCenter);
+        app.conf.set("auto_rotate", app.map.autoRotate);
+        app.conf.set("center", [app.map.center.longitude, app.map.center.latitude]);
+        app.conf.set("zoom", app.map.zoomLevel);
         py.call_sync("poor.app.quit", []);
     }
 
@@ -106,8 +111,24 @@ ApplicationWindow {
 
     onDeviceOrientationChanged: updateOrientation()
 
-    onNavigationActiveChanged: {
+    onHasMapMatchingChanged: updateMapMatching()
+
+    onModeChanged: {
+        if (!initialized) return;
+        if (app.mode === modes.explore) {
+
+        } else if (app.mode === modes.followMe) {
+
+        } else if (app.mode === modes.navigate) {
+            app.navigationPageSeen = true;
+            app.navigationStarted = true;
+            app.rerouteConsecutiveErrors = 0;
+            app.reroutePreviousTime = -1;
+            app.rerouteTotalCalls = 0;
+            app.resetMenu();
+        }
         app.updateKeepAlive();
+        app.updateMapMatching();
     }
 
     function getIcon(name, no_variant) {
@@ -142,28 +163,6 @@ ApplicationWindow {
         updateOrientation();
         updateKeepAlive();
         initialized = true;
-    }
-
-    function updateOrientation() {
-        if (!(app.deviceOrientation & app.allowedOrientations)) return;
-        switch (app.deviceOrientation) {
-        case Orientation.Portrait:
-            app.screenWidth = Screen.width;
-            app.screenHeight = Screen.height;
-            break;
-        case Orientation.PortraitInverted:
-            app.screenWidth = Screen.width;
-            app.screenHeight = Screen.height;
-            break;
-        case Orientation.Landscape:
-            app.screenWidth = Screen.height;
-            app.screenHeight = Screen.width;
-            break;
-        case Orientation.LandscapeInverted:
-            app.screenWidth = Screen.height;
-            app.screenHeight = Screen.width;
-            break;
-        }
     }
 
     function playMaybe(message) {
@@ -232,9 +231,10 @@ ApplicationWindow {
     function rerouteMaybe() {
         // Find a new route if conditions are met.
         if (!app.conf.reroute) return;
-        if (!app.navigationActive) return;
+        if (app.mode !== modes.navigate) return;
         if (!gps.position.horizontalAccuracyValid) return;
         if (gps.position.horizontalAccuracy > 100) return;
+        if (!py.evaluate("poor.app.router.can_reroute")) return;
         if (py.evaluate("poor.app.router.offline")) {
             if (Date.now() - app.reroutePreviousTime < 5000) return;
             return app.reroute();
@@ -252,6 +252,18 @@ ApplicationWindow {
 
     function resetMenu() {
         app._stackMain.keep = false;
+    }
+
+    function setModeExplore() {
+        app.mode = modes.explore;
+    }
+
+    function setModeFollowMe() {
+        app.mode = modes.followMe;
+    }
+
+    function setModeNavigate() {
+        app.mode = modes.navigate;
     }
 
     function showMap() {
@@ -301,7 +313,15 @@ ApplicationWindow {
         // Update state of keep-alive, i.e. display blanking prevention.
         var prevent = app.conf.get("keep_alive");
         DisplayBlanking.preventBlanking = app.applicationActive &&
-            (prevent === "always" || (prevent === "navigating" && app.navigationActive));
+            (prevent === "always" || (prevent === "navigating" && (app.mode === modes.navigate || app.mode === modes.followMe)));
+    }
+
+    function updateMapMatching() {
+        if (!hasMapMatching) mapMatchingMode = "none";
+        else if (app.mode === modes.navigate)
+            mapMatchingMode = (app.conf.mapMatchingWhenNavigating && map && map.route && map.route.mode ? map.route.mode : "none");
+        else if (app.mode === modes.followMe) mapMatchingMode = app.conf.mapMatchingWhenFollowing;
+        else mapMatchingMode = app.conf.mapMatchingWhenIdle;
     }
 
     function updateNavigationStatus(status) {
@@ -310,6 +330,28 @@ ApplicationWindow {
         if (app.navigationStatus.voiceUri && app.conf.voiceNavigation)
             sound.source = app.navigationStatus.voiceUri;
         app.navigationStatus.reroute && app.rerouteMaybe();
+    }
+
+    function updateOrientation() {
+        if (!(app.deviceOrientation & app.allowedOrientations)) return;
+        switch (app.deviceOrientation) {
+        case Orientation.Portrait:
+            app.screenWidth = Screen.width;
+            app.screenHeight = Screen.height;
+            break;
+        case Orientation.PortraitInverted:
+            app.screenWidth = Screen.width;
+            app.screenHeight = Screen.height;
+            break;
+        case Orientation.Landscape:
+            app.screenWidth = Screen.height;
+            app.screenHeight = Screen.width;
+            break;
+        case Orientation.LandscapeInverted:
+            app.screenWidth = Screen.height;
+            app.screenHeight = Screen.width;
+            break;
+        }
     }
 
 }
