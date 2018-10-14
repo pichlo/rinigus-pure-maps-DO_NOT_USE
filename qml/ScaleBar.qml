@@ -30,29 +30,9 @@ Item {
     anchors.leftMargin: Theme.paddingLarge + Theme.paddingSmall
     anchors.topMargin: Theme.paddingLarge + Theme.paddingSmall
     anchors.rightMargin:  Theme.paddingLarge + Theme.paddingSmall
-    height: (app.mode === modes.navigate || app.mode === modes.followMe) && app.portrait ? scaleBar.width : scaleBar.height
-    states: [
-        State {
-            when: (app.mode === modes.navigate || app.mode === modes.followMe) && !app.portrait
-            AnchorChanges {
-                target: master
-                anchors.bottom: parent.bottom
-                anchors.left: undefined
-                anchors.right: parent.right
-            }
-        },
-
-        State {
-            when: app.mode === modes.navigate || app.mode === modes.followMe
-            AnchorChanges {
-                target: master
-                anchors.bottom: undefined
-                anchors.top: attributionButton.bottom
-            }
-        }
-    ]
+    height: scaleBar.height
     visible: !app.poiActive
-    width: (app.mode === modes.navigate || app.mode === modes.followMe) && app.portrait ? scaleBar.height : scaleBar.width
+    width: scaleBar.width
     z: 400
 
     Item {
@@ -62,12 +42,6 @@ Item {
         width: scaleBar.scaleWidth
         opacity: 0.9
         visible: scaleWidth > 0
-
-        transform: Rotation {
-            angle: (app.mode === modes.navigate || app.mode === modes.followMe) && app.portrait ? 90 : 0
-            origin.x: scaleBar.width/2
-            origin.y: scaleBar.height/2
-        }
 
         property real   _prevDist: 0
         property int    scaleBarMaxLengthDefault: Math.min(map.height,map.width) / 4
@@ -151,7 +125,5 @@ Item {
             scaleBar.text = py.call_sync("poor.util.format_distance", [dist, 1]);
             _prevDist = dist;
         }
-
     }
-
 }

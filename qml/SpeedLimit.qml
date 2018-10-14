@@ -25,7 +25,6 @@ Rectangle {
     anchors.left: parent.left
     anchors.leftMargin: Theme.paddingLarge
     anchors.bottomMargin: Theme.paddingLarge
-    anchors.bottom: streetName.top
     border.width: 0.7*Theme.paddingLarge
     border.color: "red"
     color: "white"
@@ -44,6 +43,25 @@ Rectangle {
         return limit.text.length > 0
     }
     z: 400
+
+    states: [
+        State {
+            when: app.portrait
+            AnchorChanges {
+                target: ring
+                anchors.bottom: streetName.top
+                anchors.verticalCenter: undefined
+            }
+        },
+        State {
+            when: !app.portrait
+            AnchorChanges {
+                target: ring
+                anchors.bottom: undefined
+                anchors.verticalCenter: streetName.verticalCenter
+            }
+        }
+    ]
 
     Text {
         id: limit
@@ -89,5 +107,4 @@ Rectangle {
             }
         }
     }
-
 }

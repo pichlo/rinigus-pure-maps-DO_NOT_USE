@@ -688,7 +688,6 @@ MapboxMap {
         // Calculate new margins and set them for the map.
         var header = navigationBlock && navigationBlock.height > 0 ? navigationBlock.height : map.height*0.05;
         var footer = !app.poiActive && app.mode === modes.explore && menuButton ? (map.height-menuButton.y) : 0;
-        footer += !app.poiActive && (app.mode === modes.navigate || app.mode === modes.followMe) && app.portrait && navigationInfoBlock ? navigationInfoBlock.height : 0;
         footer += !app.poiActive && (app.mode === modes.navigate || app.mode === modes.followMe) && streetName ? streetName.height : 0
         footer += app.poiActive && poiPanel ? poiPanel.height : 0
         footer = Math.min(footer, map.height / 2.0);

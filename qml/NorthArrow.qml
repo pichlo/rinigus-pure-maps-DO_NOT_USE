@@ -22,33 +22,14 @@ import "."
 
 IconButton {
     id: master
-    anchors.bottom: parent.bottom
-    anchors.right: parent.right
+    anchors.top: centerButton.bottom
+    anchors.horizontalCenter: centerButton.horizontalCenter
     height: icon.height
     icon.height: icon.sourceSize.height
     icon.rotation: -map.bearing
     icon.smooth: true
     icon.source: app.getIcon("icons/north")
     icon.width: icon.sourceSize.width
-    states: [
-        State {
-            when: (app.mode === modes.navigate || app.mode === modes.followMe) && !app.portrait
-            AnchorChanges {
-                target: master
-                anchors.bottom: undefined
-                anchors.top: navigationSign.bottom
-            }
-        },
-        State {
-            when: app.mode === modes.navigate || app.mode === modes.followMe
-            AnchorChanges {
-                target: master
-                anchors.bottom: undefined
-                anchors.top: centerButton.bottom
-            }
-        }
-    ]
-    visible: !app.poiActive || app.mode === modes.navigate || app.mode === modes.followMe
     width: icon.width
     z: 500
 

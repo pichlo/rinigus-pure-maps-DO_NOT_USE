@@ -32,8 +32,8 @@ import "js/util.js" as Util
 
 Rectangle {
     id: block
-    width: notify ? (app.portrait ? app.screenWidth : (progressBar.width + displayArea.width)) : 0
-    height: notify ? (app.portrait ? (progressBar.height + displayArea.height) : app.screenHeight) : 0
+    width: hasRoute ? (app.portrait ? app.screenWidth : (progressBar.width + displayArea.width)) : 0
+    height: hasRoute ? (app.portrait ? (progressBar.height + displayArea.height) : app.screenHeight) : 0
     color: app.styler.blockBg
 
     property string destDist: app.navigationStatus.destDist
@@ -42,7 +42,7 @@ Rectangle {
     property string icon:     app.navigationStatus.icon
     property string manDist:  app.navigationStatus.manDist
     property string manTime:  app.navigationStatus.manTime
-    property bool   notify:   app.navigationStatus.notify
+    property bool   hasRoute: map.hasRoute
 
     Grid {
         columns: app.portrait ? 1 : 2
@@ -52,8 +52,8 @@ Rectangle {
             // Section one, the progress bar
             // Placed along the top or the left side of the screen
             id: progressBar
-            width: block.notify ? (app.portrait ? app.screenWidth : Theme.paddingSmall) : 0
-            height: block.notify ? (app.portrait ? Theme.paddingSmall : app.screenHeight) : 0
+            width: block.hasRoute ? (app.portrait ? app.screenWidth : Theme.paddingSmall) : 0
+            height: block.hasRoute ? (app.portrait ? Theme.paddingSmall : app.screenHeight) : 0
             // Draw a shaded background
             color: Theme.primaryColor
             opacity: 0.1
@@ -122,7 +122,7 @@ Rectangle {
                 anchors.bottomMargin: Theme.paddingSmall
                 fillMode: Image.Pad
                 smooth: true
-                source: block.notify ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
+                source: block.hasRoute ? "icons/navigation/%1.svg".arg(block.icon || "flag") : ""
                 sourceSize.height: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
                 sourceSize.width: (Screen.sizeCategory >= Screen.Large ? 1.7 : 1) * Theme.iconSizeLarge
                 height: sourceSize.height
